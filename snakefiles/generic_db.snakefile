@@ -30,7 +30,7 @@ rule CLEAN_GENERIC_DB:
 rule GDB_ORGANISMS:
     input: "data/organism.cfg"
     output: "result/generic_db/ORGANISMS.txt"
-    shell: "python builder/export_organisms.py {input} {output}"
+    shell: "python builder/extract_organisms.py {input} {output}"
 
 GO_BRANCHES = ['BP', 'MF', 'CC']
 
