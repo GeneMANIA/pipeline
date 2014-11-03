@@ -85,7 +85,7 @@ rule TABULATE_ATTRIBUTE_METADATA:
 rule APPLY_TABULATION:
     input: expand("work/attributes/{collection}/{fn}.cfg.cp", zip, collection=CFGS.collection, fn=CFGS.fn)
     output: "work/attributes/metadata.txt"
-    shell: "python builder/tabulate_cfgs.py {input} {output} --key_ext='.cfg.cp'"
+    shell: "python builder/tabulate_cfgs.py {input} {output} --key_lstrip='work/' --key_rstrip='.cfg.cp'"
 
 # enumerate, needs name. not needed anymore if tabulation good enough?
 rule ENUMERATE_ATTRIBUTE_METADATA:
@@ -118,7 +118,7 @@ rule GENERIC_DB_ATTRIBUTES:
     input: desc=expand("work/attributes/{collection}/{fn}.desc.cleaned", zip, collection=DESCS.collection, fn=DESCS.fn),
         metadata='work/attributes/metadata.txt'
     output: "result/generic_db/ATTRIBUTES.txt"
-    shell: "python builder/extract_attributes.py attributes {output} {input.metadata} {input.desc} --key_ext='.desc.cleaned'"
+    shell: "python builder/extract_attributes.py attributes {output} {input.metadata} {input.desc} --key_lstrip='work/' --key_rstrip='.desc.cleaned'"
 
 # generic db attribute data files for engine cache
 #
@@ -131,7 +131,7 @@ rule GENERIC_DB_ATTRIBUTES:
 #    input: mapfile="work/attributes/metadata.txt",  attribs=expand("work/attributes/{collection}/{fn}.txt.mapped", zip, collection=FNS.collection, fn=FNS.fn)
 #    output: dynamic("result/generic_db/ATTRIBUTES/{attr_id}.txt")
 #    params: newdir='result/generic_db/ATTRIBUTES'
-#    shell: "python builder/rename_data_files.py attribs {input.mapfile} {params.newdir} {input.attribs}"
+#    shell: "python builder/rename_data_files.py attribs {input.mapfile} {params.newdir} {input.attribs} --key_lstrip='work/' --key_rstrip='.txt.mapped'"
 
 rule GENERIC_DB_ATTRIBUTE_DATA:
     input: "work/flags/attribute_data.flag"
@@ -140,7 +140,7 @@ rule GENERIC_DB_COPY_ATTRIBUTE_DATA:
     input: mapfile="work/attributes/metadata.txt",  attribs=expand("work/attributes/{collection}/{fn}.txt.mapped", zip, collection=FNS.collection, fn=FNS.fn)
     output: "work/flags/attribute_data.flag"
     params: newdir='result/generic_db/ATTRIBUTES'
-    shell: "python builder/rename_data_files.py attribs {input.mapfile} {params.newdir} {input.attribs} && touch {output}"
+    shell: "python builder/rename_data_files.py attribs {input.mapfile} {params.newdir} {input.attribs} --key_lstrip='work/' --key_rstrip='.txt.mapped' && touch {output}"
 
 rule CLEAN_ATTRIBUTES:
     shell: """

@@ -16,7 +16,7 @@ rule TABULATE_NETWORK_METADATA:
 rule APPLY_NETWORK_METADATA_TABULATION:
     input: expand("data/networks/{proctype}/{collection}/{fn}.cfg", zip, proctype=NW_CFGS.proctype, collection=NW_CFGS.collection, fn=NW_CFGS.fn)
     output: "work/networks/network_metadata.txt"
-    shell: "python builder/tabulate_cfgs.py {input} {output} --key_ext='.cfg'"
+    shell: "python builder/tabulate_cfgs.py {input} {output} --key_lstrip='data/' --key_rstrip='.cfg'"
 
 rule NETWORK_STATS_FILES:
     input: expand("work/networks/{proctype}/{collection}/{fn}.txt.nn.stats", zip, proctype=NW_PROCESSED_FILES.proctype, collection=NW_PROCESSED_FILES.collection, fn=NW_PROCESSED_FILES.fn)
@@ -32,7 +32,7 @@ rule TABULATED_NETWORK_STATS:
 rule TABULATE_NETWORK_STATS:
     input: expand("work/networks/{proctype}/{collection}/{fn}.txt.nn.stats", zip, proctype=NW_PROCESSED_FILES.proctype, collection=NW_PROCESSED_FILES.collection, fn=NW_PROCESSED_FILES.fn)
     output: "work/networks/stats.txt"
-    shell: "python builder/tabulate_cfgs.py {input} {output} --enumerate=false --key_ext='.txt.nn.stats'"
+    shell: "python builder/tabulate_cfgs.py {input} {output} --enumerate=false --key_lstrip 'work/' --key_rstrip='.txt.nn.stats'"
 
 
 rule INIT_PUBMED_CACHE:
@@ -52,6 +52,12 @@ rule GENERATE_NETWORK_NAMES:
     input: "work/networks/network_metadata.extended"
     output: "work/networks/network_metadata.txt.processed"
     shell: "python builder/generate_network_names.py {input} {output}"
+
+
+rule JOIN_NETWORK_INTERACTION_COUNTS:
+    input: "work/networks/network_metadata.txt.processed"
+    output: "work/networks/network_metadata.txt.blahblah"
+    shell: "python builder/integrate_interaction_counts {input} {output}"
 
 
 rule EXTRACT_NETWORKS:

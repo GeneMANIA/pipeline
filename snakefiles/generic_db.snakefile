@@ -65,4 +65,4 @@ rule COPY_INTERACTIONS:
     input: mapfile="work/networks/network_metadata.txt", networks=expand("work/networks/{proctype}/{collection}/{fn}.txt.nn", zip, proctype=NW_PROCESSED_FILES.proctype, collection=NW_PROCESSED_FILES.collection, fn=NW_PROCESSED_FILES.fn)
     output: "work/flags/interaction_data.flag"
     params: newdir='result/generic_db/INTERACTIONS'
-    shell: "python builder/rename_data_files.py interactions {input.mapfile} {params.newdir} {ORGANISM_ID} {input.networks} && touch {output}"
+    shell: "python builder/rename_data_files.py interactions {input.mapfile} {params.newdir} {ORGANISM_ID} {input.networks} --key_lstrip='work/' --key_rstrip='.txt.nn' && touch {output}"
