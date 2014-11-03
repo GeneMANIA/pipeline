@@ -35,10 +35,23 @@ rule TABULATE_NETWORK_STATS:
     shell: "python builder/tabulate_cfgs.py {input} {output} --enumerate=false --key_ext='.txt.nn.stats'"
 
 
-rule PROCESS_NETWORK_METADATA:
-    input: "work/networks/network_metadata.txt"
+rule INIT_PUBMED_CACHE:
+    message: "empty pubmed data first time through, this will get updated"
+    output: "work/cache/pubmed.txt"
+    shell: "cp config/EMPTY_PUBMED_METADATA.txt {output}"
+
+
+rule FETCH_PUBMED_METADATA:
+    input: metadata="work/networks/network_metadata.txt", pubmed_cache="work/cache/pubmed.txt"
+    output: "work/networks/network_metadata.extended"
+    params: pubmed_cache="work/cache/pubmed.txt", fetchsize="200"
+    shell: "python builder/fetch_pubmed_metadata.py {input.metadata} {output} {input.pubmed_cache} --fetchsize={params.fetchsize}"
+
+
+rule GENERATE_NETWORK_NAMES:
+    input: "work/networks/network_metadata.extended"
     output: "work/networks/network_metadata.txt.processed"
-    shell: "python builder/process_network_metadata.py {input} {output}"
+    shell: "python builder/generate_network_names.py {input} {output}"
 
 
 rule EXTRACT_NETWORKS:
@@ -57,3 +70,5 @@ rule EXTRACT_NETWORK_METADATA:
     input: "work/networks/network_metadata.txt.processed"
     output: "result/generic_db/NETWORK_METADATA.txt"
     shell: "python builder/extract_networks.py network_metadata {input} {output}"
+
+

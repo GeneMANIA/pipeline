@@ -14,8 +14,6 @@ def fetch(pmid_list, email=None):
 
     Entrez.email = email
     pmid_list = [pmid for pmid in pmid_list if pmid is not None]
-    print('retrieving', len(pmid_list))
-    print(pmid_list)
     ids = ','.join(str(id) for id in pmid_list)
     handle = Entrez.efetch(db='pubmed', id=ids, retmode='xml')
     result = Entrez.read(handle)
@@ -84,8 +82,11 @@ def main(inputfile, outputfile, pubmed_datafile, fetchsize):
                                    na_filter=False, encoding='UTF8')
 
     if os.path.exists(pubmed_datafile):
-        pubmed_data = pd.read_csv(inputfile, sep='\t', header=0, na_filter=False,
+        # give the header fields explicitly since we create this as an empty
+        # file when no cache has been built up
+        pubmed_data = pd.read_csv(pubmed_datafile, sep='\t', header=0, na_filter=False,
                                   encoding='UTF8')
+        assert list(pubmed_data.columns) == PUBMED_FIELDS # consistency check
     else:
         pubmed_data = pd.DataFrame(columns=PUBMED_FIELDS)
 
@@ -107,7 +108,6 @@ def main(inputfile, outputfile, pubmed_datafile, fetchsize):
             fetched = [to_series(item) for item in parsed_metadata]
             all_fetched.extend(fetched)
 
-
         # glue the series together into a dataframe
         new_pubmed_data = pd.concat(all_fetched, axis=1).transpose()
 
@@ -117,10 +117,12 @@ def main(inputfile, outputfile, pubmed_datafile, fetchsize):
                            na_filter=False, encoding='UTF8')
 
     # join with network metadata
-    # TODO: check this preserves index (id) in the left dataframe
+    # pushing index preserve id in from the left dataframe
+    network_metadata.reset_index(inplace=True)
     updated_network_metadata = pd.merge(network_metadata, pubmed_data,
                                         on='pubmed_id', how='left')
 
+    updated_network_metadata.set_index('id', inplace=True)
     updated_network_metadata.to_csv(outputfile, sep='\t', header=True, index=True,
                                     na_filter=False, encoding='UTF8')
 
@@ -133,7 +135,7 @@ if __name__ == '__main__':
     parser.add_argument('outputfile', help='output network metadata file')
     parser.add_argument('pubmed_data', help='file containing previously retrieved pubmed data, to be ')
     parser.add_argument('--fetchsize', help='# of pubmed entries to retrieve in a single fetch, default 200',
-                        default=200)
+                        type=int, default=200)
 
     args = parser.parse_args()
     main(args.inputfile, args.outputfile, args.pubmed_data, args.fetchsize)

@@ -10,6 +10,15 @@ DEFAULT = ''
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
+def fix_newlines(row):
+    '''
+    some fields may contain newlines, replace with spaces
+
+    alternative would be to html-escape??
+    '''
+
+    return [' '.join(item.split('\n')) for item in row]
+
 def main(filenames, params, enumerate, outputfile, key_ext):
     rows = []
     for filename in filenames:
@@ -28,6 +37,7 @@ def main(filenames, params, enumerate, outputfile, key_ext):
             dataset_key = filename
 
         row = [dataset_key] + [config.get(param, DEFAULT) for param in params]
+        row = fix_newlines(row)
         rows.append(row)
 
     header_params = ['dataset_key'] + params
