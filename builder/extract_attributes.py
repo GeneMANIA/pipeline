@@ -17,7 +17,7 @@ def extract_attribute_groups(input_file, output_file):
                 header=False, index=True)
 
 
-def extract_attributes(input_files, groups_file, output_file, key_ext):
+def extract_attributes(input_files, groups_file, output_file, key_lstrip=None, key_rstrip=None):
 
     groups = pd.read_csv(groups_file, sep='\t', header=0, index_col=0)
     assert groups.index.name == 'id'
@@ -27,13 +27,11 @@ def extract_attributes(input_files, groups_file, output_file, key_ext):
     for input_file in input_files:
 
         # find id corresponding to file
-        if key_ext is not None:
-            if input_file.endswith(key_ext):
-                dataset_key = input_file[:-len(key_ext)]
-            else:
-                raise('Unexpected file extension in:' + input_file)
-        else:
-            dataset_key = input_file
+        dataset_key = input_file
+        if key_lstrip and dataset_key.startswith(key_lstrip):
+            dataset_key = dataset_key[len(key_lstrip):]
+        if key_rstrip and dataset_key.endswith(key_rstrip):
+            dataset_key = dataset_key[:-len(key_rstrip)]
 
         matched = groups[groups['dataset_key'] == dataset_key].index
 
@@ -61,7 +59,6 @@ def extract_attributes(input_files, groups_file, output_file, key_ext):
                           columns=['ORGANISM_ID', 'ATTRIBUTE_GROUP_ID', 'EXTERNAL_ID', 'NAME', 'DESCRIPTION'])
 
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Create attribute files in generic_db format')
     subparsers = parser.add_subparsers(dest='subparser_name')
@@ -76,8 +73,10 @@ if __name__ == '__main__':
     parser_attributes.add_argument('output', help='output file')
     parser_attributes.add_argument('groups', help='table of attribute group metadata')
     parser_attributes.add_argument('inputs', help='something', nargs='+')
-    parser_attributes.add_argument('--key_ext', type=str,
-                                   help='to determine dataset key, from filename = key.key_ext')
+    parser_attributes.add_argument('--key_lstrip', type=str,
+                                   help='remove given string from left of filename to compute dataset key')
+    parser_attributes.add_argument('--key_rstrip', type=str,
+                                   help='remove given string from right of filename to compute dataset key')
 
     # parse args and dispatch
     args = parser.parse_args()
@@ -85,6 +84,6 @@ if __name__ == '__main__':
     if args.subparser_name == 'attribute_groups':
         extract_attribute_groups(args.input, args.output)
     elif args.subparser_name == 'attributes':
-        extract_attributes(args.inputs, args.groups, args.output, args.key_ext)
+        extract_attributes(args.inputs, args.groups, args.output, args.key_lstrip, args.key_rstrip)
     else:
         raise Exception('unexpected command')

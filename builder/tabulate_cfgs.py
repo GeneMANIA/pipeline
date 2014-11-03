@@ -1,14 +1,24 @@
 
+"""takes a list of property/config/ini style files
+containing name=value pairs, and returns a single table
+in a file that has name in the columns, the values in the
+rows, one row for each of the input files. The input file
+itself is included as an additional colummn, as is optionally
+an extra integer id column.
+"""
+
 import argparse
 import pandas as pd
 from configobj import ConfigObj
 
 DEFAULT = ''
 
+
 # bool doesn't work as naively expected in argparse, see
 # http://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
+
 
 def fix_newlines(row):
     '''
@@ -19,7 +29,8 @@ def fix_newlines(row):
 
     return [' '.join(item.split('\n')) for item in row]
 
-def main(filenames, params, enumerate, outputfile, key_ext):
+
+def main(filenames, params, enumerate, outputfile, key_lstrip=None, key_rstrip=None):
     rows = []
     for filename in filenames:
         config = ConfigObj(filename, encoding='utf8')
@@ -28,13 +39,11 @@ def main(filenames, params, enumerate, outputfile, key_ext):
             params = config.keys()
 
         # find id corresponding to file
-        if key_ext is not None:
-            if filename.endswith(key_ext):
-                dataset_key = filename[:-len(key_ext)]
-            else:
-                raise Exception('Unexpected file extension in:' + filename)
-        else:
-            dataset_key = filename
+        dataset_key = filename
+        if key_lstrip and dataset_key.startswith(key_lstrip):
+            dataset_key = dataset_key[len(key_lstrip):]
+        if key_rstrip and dataset_key.endswith(key_rstrip):
+            dataset_key = dataset_key[:-len(key_rstrip)]
 
         row = [dataset_key] + [config.get(param, DEFAULT) for param in params]
         row = fix_newlines(row)
@@ -66,8 +75,11 @@ if __name__ == '__main__':
     parser.add_argument('--enumerate', type=str2bool, default=True,
                         help='also add an id column along with file path')
 
-    parser.add_argument('--key_ext', type=str,
-                        help='to determine dataset key, from filename = key.key_ext')
+    parser.add_argument('--key_lstrip', type=str,
+                        help='remove given string from left of filename to compute dataset key')
+
+    parser.add_argument('--key_rstrip', type=str,
+                        help='remove given string from right of filename to compute dataset key')
 
     args = parser.parse_args()
-    main(args.filenames, args.cfgparams, args.enumerate, args.output, args.key_ext)
+    main(args.filenames, args.cfgparams, args.enumerate, args.output, args.key_lstrip, args.key_rstrip)

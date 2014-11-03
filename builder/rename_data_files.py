@@ -35,8 +35,20 @@ def copy_interactions(mapfile, newdir, org_id, filenames):
         #os.symlink(filename, link_name)
         shutil.copy(filename, link_name)
 
+
+#TODO: move to utils, use in var
+def strip_key(filename, key_lstrip, key_rstrip):
+    dataset_key = filename
+    if key_lstrip and dataset_key.startswith(key_lstrip):
+        dataset_key = dataset_key[len(key_lstrip):]
+    if key_rstrip and dataset_key.endswith(key_rstrip):
+        dataset_key = dataset_key[:-len(key_rstrip)]
+
+    return dataset_key
+
+
 # attributes
-def copy_attributes(mapfile, newdir, filenames):
+def copy_attributes(mapfile, newdir, filenames, key_lstrip=None, key_rstrip=None):
 
     if os.path.exists(newdir):
         shutil.rmtree(newdir)
@@ -45,25 +57,9 @@ def copy_attributes(mapfile, newdir, filenames):
     metadata = pd.read_csv(mapfile, sep='\t')
     filenames = pd.DataFrame(filenames, columns=['filename'])
 
-    pd.set_option('display.max_colwidth', 100)
-    print('================')
-    print(metadata[['id', 'dataset_key']])
-    print(filenames[['filename']])
-
-    # get rid of prefix, TODO shouldn't have to do this, fix in metadata file
-    metadata['dataset_key'] = metadata['dataset_key'].str.replace('work/', '', 1)
-    filenames['dataset_key'] = filenames['filename'].str.replace('work/', '', 1)
-    filenames['dataset_key'] = filenames['dataset_key'].str.replace('.txt.mapped', '', 1)
-
-    print('================')
-    print(metadata[['id', 'dataset_key']])
-    print(filenames[['dataset_key', 'filename']])
+    filenames['dataset_key'] = filenames['filename'].apply(lambda x: strip_key(x, key_lstrip, key_rstrip))
 
     joined = pd.merge(metadata, filenames, on='dataset_key', how='inner')
-
-    #pd.set_option('display.max_colwidth', 100)
-    #print(len(joined))
-    #print(joined[['id', 'dataset_key', 'filename']])
 
     assert len(joined) == len(metadata) == len(filenames)
 
@@ -105,12 +101,18 @@ if __name__ == '__main__':
     parser_attribs.add_argument('filenames', metavar='files', type=str, nargs='+',
                         help='list of input files')
 
+    parser_attribs.add_argument('--key_lstrip', type=str,
+                        help='remove given string from left of filename to compute dataset key')
+
+    parser_attribs.add_argument('--key_rstrip', type=str,
+                        help='remove given string from right of filename to compute dataset key')
+
     args = parser.parse_args()
 
     if args.subparser_name == 'interactions':
         copy_interactions(args.mapfile, args.newdir, args.orgid, args.filenames)
     elif args.subparser_name == 'attribs':
-        copy_attributes(args.mapfile, args.newdir, args.filenames)
+        copy_attributes(args.mapfile, args.newdir, args.filenames, args.key_lstrip, args.key_rstrip)
     else:
         raise Exception('unexpected command')
 
