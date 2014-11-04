@@ -43,21 +43,21 @@ rule INIT_PUBMED_CACHE:
 
 rule FETCH_PUBMED_METADATA:
     input: metadata="work/networks/network_metadata.txt", pubmed_cache="work/cache/pubmed.txt"
-    output: "work/networks/network_metadata.extended"
+    output: "work/networks/network_metadata.pubmed_extended"
     params: pubmed_cache="work/cache/pubmed.txt", fetchsize="200"
     shell: "python builder/fetch_pubmed_metadata.py {input.metadata} {output} {input.pubmed_cache} --fetchsize={params.fetchsize}"
 
 
 rule GENERATE_NETWORK_NAMES:
-    input: "work/networks/network_metadata.extended"
-    output: "work/networks/network_metadata.txt.processed"
+    input: "work/networks/network_metadata.pubmed_extended"
+    output: "work/networks/network_metadata.txt.named"
     shell: "python builder/generate_network_names.py {input} {output}"
 
 
 rule JOIN_NETWORK_INTERACTION_COUNTS:
-    input: "work/networks/network_metadata.txt.processed"
-    output: "work/networks/network_metadata.txt.blahblah"
-    shell: "python builder/integrate_interaction_counts {input} {output}"
+    input: network_metadata="work/networks/network_metadata.txt.named", stats="work/networks/stats.txt"
+    output: "work/networks/network_metadata.txt.processed"
+    shell: "python builder/table_joiner.py {input.network_metadata} {input.stats} {output} 'dataset_key'"
 
 
 rule EXTRACT_NETWORKS:
