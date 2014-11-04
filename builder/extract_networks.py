@@ -61,7 +61,7 @@ def extract_network_metadata(input_file, output_file):
     # metadata in generic_db format
     gdb_metadata = pd.DataFrame(columns=output_cols)
     gdb_metadata['ID'] = metadata['id']
-    gdb_metadata['interactionCount'] = 0 # TODO
+    gdb_metadata['interactionCount'] = metadata['num_interactions']
     gdb_metadata['accessStats'] = 0 # will fail if left blank
 
 
