@@ -134,11 +134,11 @@ rule GENERIC_DB_ATTRIBUTES:
 #    shell: "python builder/rename_data_files.py attribs {input.mapfile} {params.newdir} {input.attribs} --key_lstrip='work/' --key_rstrip='.txt.mapped'"
 
 rule GENERIC_DB_ATTRIBUTE_DATA:
-    input: "work/flags/attribute_data.flag"
+    input: "work/flags/generic_db.attribute_data.flag"
 
 rule GENERIC_DB_COPY_ATTRIBUTE_DATA:
     input: mapfile="work/attributes/metadata.txt",  attribs=expand("work/attributes/{collection}/{fn}.txt.mapped", zip, collection=FNS.collection, fn=FNS.fn)
-    output: "work/flags/attribute_data.flag"
+    output: "work/flags/generic_db.attribute_data.flag"
     params: newdir='result/generic_db/ATTRIBUTES'
     shell: "python builder/rename_data_files.py attribs {input.mapfile} {params.newdir} {input.attribs} --key_lstrip='work/' --key_rstrip='.txt.mapped' && touch {output}"
 

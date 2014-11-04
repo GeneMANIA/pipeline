@@ -25,7 +25,9 @@ rule GDB_STATISTICS:
     shell: "touch {output}"
 
 rule CLEAN_GENERIC_DB:
-    shell: "rm -rf result/generic_db"
+    shell: """rm -rf result/generic_db
+        rm -f work/flags/generic_db.*.flag
+        """
 
 rule GDB_ORGANISMS:
     input: "data/organism.cfg"
@@ -59,10 +61,10 @@ NW_PROCESSED_FILES = glob_wildcards("data/networks/{proctype}/{collection}/{fn}.
 #    shell: "python builder/rename_data_files.py interactions {input.mapfile} {params.newdir} {ORGANISM_ID} {input.networks}"
 
 rule GDB_INTERACTIONS:
-    input: "work/flags/INTERACTION_DATA.flag"
+    input: "work/flags/generic_db.interaction_data.flag"
 
 rule COPY_INTERACTIONS:
     input: mapfile="work/networks/network_metadata.txt", networks=expand("work/networks/{proctype}/{collection}/{fn}.txt.nn", zip, proctype=NW_PROCESSED_FILES.proctype, collection=NW_PROCESSED_FILES.collection, fn=NW_PROCESSED_FILES.fn)
-    output: "work/flags/interaction_data.flag"
+    output: "work/flags/generic_db.interaction_data.flag"
     params: newdir='result/generic_db/INTERACTIONS'
     shell: "python builder/rename_data_files.py interactions {input.mapfile} {params.newdir} {ORGANISM_ID} {input.networks} --key_lstrip='work/' --key_rstrip='.txt.nn' && touch {output}"

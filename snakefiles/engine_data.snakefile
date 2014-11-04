@@ -4,7 +4,7 @@
 # need to reorganize low-level control of data files
 
 
-# lucene index creation location not so flexible currently. TODO fix
+# TODO: move to common location
 LUCENE_INDEX_DIR = "result/lucene_index"
 GENERIC_DB_DIR = "result/generic_db"
 
@@ -22,7 +22,7 @@ rule ENGINE_DATA:
 rule BUILD_NETWORKS_CACHE:
     message: "cachebuilder"
     #input: "work/flags/lucene.flag", dynamic("result/generic_db/INTERACTIONS/{ORG_ID}.{NW_ID}.txt")
-    input: "work/flags/lucene.flag", "work/flags/interaction_data.flag"
+    input: "work/flags/lucene.flag", "work/flags/generic_db.interaction_data.flag"
     output: "work/flags/engine.cachebuilder.flag"
     shell: """java -cp {JAR_FILE} -Xmx2G org.genemania.engine.apps.CacheBuilder \
         -indexDir "{LUCENE_INDEX_DIR}" -cachedir "{NETWORK_CACHE_DIR}" \
@@ -34,7 +34,7 @@ rule BUILD_NETWORKS_CACHE:
 rule ATTRIBUTE_DATA:
     message: "attribute data"
     #input: "work/flags/engine.cachebuilder.flag", dynamic("result/generic_db/ATTRIBUTES/{attr_id}.txt")
-    input: "work/flags/engine.cachebuilder.flag", "work/flags/attribute_data.flag"
+    input: "work/flags/engine.cachebuilder.flag", "work/flags/generic_db.attribute_data.flag"
     output: "work/flags/engine.attribute_data.flag"
     shell: """java -cp {JAR_FILE} -Xmx2G org.genemania.engine.apps.AttributeBuilder \
         -indexDir "{LUCENE_INDEX_DIR}" -cachedir "{NETWORK_CACHE_DIR}" \
