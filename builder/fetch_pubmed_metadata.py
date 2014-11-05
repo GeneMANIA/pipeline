@@ -79,7 +79,7 @@ def grouper(iterable, n, fillvalue=None):
 def main(inputfile, outputfile, pubmed_datafile, fetchsize):
 
     network_metadata = pd.read_csv(inputfile, sep='\t', header=0, index_col=0,
-                                   na_filter=False, encoding='UTF8')
+                                   na_filter=False, encoding='UTF8', dtype=str)
 
     if os.path.exists(pubmed_datafile):
         # give the header fields explicitly since we create this as an empty
@@ -113,6 +113,7 @@ def main(inputfile, outputfile, pubmed_datafile, fetchsize):
 
         # update previously retrieved metadata
         pubmed_data = pd.concat([pubmed_data, new_pubmed_data])
+        pubmed_data.drop_duplicates(inplace=True)
         pubmed_data.to_csv(pubmed_datafile, sep='\t', header=True, index=False,
                            na_filter=False, encoding='UTF8')
 

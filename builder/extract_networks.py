@@ -18,6 +18,7 @@ input:
 
 import argparse
 import pandas as pd
+import numpy as np
 
 
 def extract_network_groups(input_file, output_file):
@@ -45,6 +46,22 @@ def extract_network_groups(input_file, output_file):
                           columns=output_cols[1:])
 
 
+def format_pubmed_url(row):
+    pubmed_id = row['pubmed_id']
+
+    if pubmed_id:
+        return 'http://www.ncbi.nlm.nih.gov/pubmed/%s' % int(pubmed_id)
+    else:
+        return ''
+
+
+def format_authors_list(row):
+    # comma separated list of authors in a single field.
+    # not all authors, just first and last is all we ever display
+    parts = [row['first_author'], row['last_author']]
+    parts = [part for part in parts if part]
+    return ','.join(parts)
+
 def extract_network_metadata(input_file, output_file):
 
     # many of these ae unused
@@ -57,25 +74,39 @@ def extract_network_metadata(input_file, output_file):
 
     metadata = pd.read_csv(input_file, sep='\t', header=0)
 
-
     # metadata in generic_db format
-    gdb_metadata = pd.DataFrame(columns=output_cols)
-    gdb_metadata['ID'] = metadata['id']
-    gdb_metadata['interactionCount'] = metadata['num_interactions']
-    gdb_metadata['accessStats'] = 0 # will fail if left blank
+
+    # initialize new columns to empty
+    for col in output_cols:
+        if col not in metadata.columns:
+            metadata[col] = np.nan
+
+    # 0's and empty strings where needed
+    metadata['pubmed_id'].replace('', 0, inplace=True)
+    metadata.fillna({'pubmed_id': 0, 'accessStats': 0}, inplace=True)
+    metadata.fillna('', inplace=True)
+
+    metadata[['pubmed_id', 'accessStats']] = metadata[['pubmed_id', 'accessStats']].astype(int)
+
+    # fill in values from other colums
+    metadata['ID'] = metadata['id']
+    metadata['interactionCount'] = metadata['num_interactions']
+    metadata['pubmedId'] = metadata['pubmed_id']
+    metadata['url'] = metadata.apply(format_pubmed_url, axis=1)
+    metadata['publicationName'] = metadata['journal_short']
+    metadata['authors'] = metadata.apply(format_authors_list, axis=1)
+    print(metadata['authors'])
 
     # test filler, to see what comes up in the actual website
-    gdb_metadata['comment'] = 'comment'
-    gdb_metadata['other'] = 'other'
-    gdb_metadata['title'] = 'title'
-    gdb_metadata['url'] = 'url'
-    gdb_metadata['sourceUrl'] = 'sourceUrl'
-    gdb_metadata['processingDescription'] = 'processingDescription'
-    gdb_metadata['source'] = 'source'
-    gdb_metadata['reference'] = 'reference'
+    metadata['other'] = 'other'
+    metadata['sourceUrl'] = 'sourceUrl'
+    metadata['processingDescription'] = 'processingDescription'
+    metadata['source'] = 'source'
+    metadata['reference'] = 'reference'
 
     # write output
-    gdb_metadata.to_csv(output_file, sep='\t', header=False, index=False)
+    metadata.to_csv(output_file, sep='\t', header=False, index=False,
+                    columns=output_cols)
 
 
 def extract_networks(input_file, groups_file, output_file):

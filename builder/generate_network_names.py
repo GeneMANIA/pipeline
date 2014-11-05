@@ -13,7 +13,14 @@ def format_author_info(first_author, last_author, year):
     '''
 
     parts = [first_author, last_author, year]
-    parts = [str(part) for part in parts if bool(part) and not np.isnan(part)]
+
+    # nan's in here? remove by checking for numbers
+    parts = [part for part in parts if not np.isreal(part)]
+
+    # empty strings? remove
+    parts = [str(part) for part in parts if part]
+
+    # join up whats left
     return '-'.join(parts)
 
 

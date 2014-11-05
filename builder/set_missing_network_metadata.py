@@ -16,7 +16,7 @@ import pandas as pd
 
 def main(inputfile, outputfile):
 
-    metadata = pd.read_csv(inputfile, sep='\t', encoding='UTF8')
+    metadata = pd.read_csv(inputfile, sep='\t', encoding='UTF8', dtype=str)
 
     metadata.fillna({'group': 'other'}, inplace=True)
 
