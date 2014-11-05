@@ -64,6 +64,15 @@ def extract_network_metadata(input_file, output_file):
     gdb_metadata['interactionCount'] = metadata['num_interactions']
     gdb_metadata['accessStats'] = 0 # will fail if left blank
 
+    # test filler, to see what comes up in the actual website
+    gdb_metadata['comment'] = 'comment'
+    gdb_metadata['other'] = 'other'
+    gdb_metadata['title'] = 'title'
+    gdb_metadata['url'] = 'url'
+    gdb_metadata['sourceUrl'] = 'sourceUrl'
+    gdb_metadata['processingDescription'] = 'processingDescription'
+    gdb_metadata['source'] = 'source'
+    gdb_metadata['reference'] = 'reference'
 
     # write output
     gdb_metadata.to_csv(output_file, sep='\t', header=False, index=False)
@@ -82,7 +91,7 @@ def extract_networks(input_file, groups_file, output_file):
     groups.columns = ['GROUP_ID', 'GROUP_NAME']
 
     #networks = pd.DataFrame(columns=output_cols)
-    networks = metadata[['id', 'name', 'group', 'description', 'default_selected']].copy()
+    networks = metadata[['id', 'selected_name', 'group', 'description', 'default_selected']].copy()
     networks.columns = ['ID', 'NAME', 'GROUP_NAME', 'DESCRIPTION', 'DEFAULT_SELECTED']
 
     networks = pd.merge(networks, groups, on='GROUP_NAME', how='inner')
