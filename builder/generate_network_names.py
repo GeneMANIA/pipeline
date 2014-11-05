@@ -13,7 +13,7 @@ def format_author_info(first_author, last_author, year):
     '''
 
     parts = [first_author, last_author, year]
-    parts = [str(part) for part in parts if bool(part) and part is not np.nan]
+    parts = [str(part) for part in parts if bool(part) and not np.isnan(part)]
     return '-'.join(parts)
 
 
