@@ -18,9 +18,9 @@ def format_author_info(first_author, last_author, year):
 
 
 def name_selector(row):
-    if row['name'] and row['name'] is not np.nan:
+    if row['name']:
         return row['name']
-    elif row['auto_name'] and row['auto_name'] is not np.nan:
+    elif row['auto_name']:
         return row['auto_name']
     else:
         return row['name_from_file']
@@ -83,6 +83,7 @@ def main(inputfile, outputfile):
 
     # choose a name, either the name provided by user,
     # else the name from pubmed, else the filename
+    network_metadata.fillna({'name': '', 'auto_name': ''}, inplace=True)
     network_metadata['selected_name'] = network_metadata.apply(lambda row: name_selector(row), axis=1)
 
     # take care of name collisions
