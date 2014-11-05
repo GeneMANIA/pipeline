@@ -18,6 +18,11 @@ rule APPLY_NETWORK_METADATA_TABULATION:
     output: "work/networks/network_metadata.txt"
     shell: "python builder/tabulate_cfgs.py {input} {output} --key_lstrip='data/' --key_rstrip='.cfg'"
 
+rule SET_MISSING_NETWORK_METADATA:
+    input: "work/networks/network_metadata.txt"
+    output: "work/networks/network_metadata.txt.defaulted"
+    shell: "python builder/set_missing_network_metadata.py {input} {output}"
+
 rule NETWORK_STATS_FILES:
     input: expand("work/networks/{proctype}/{collection}/{fn}.txt.nn.stats", zip, proctype=NW_PROCESSED_FILES.proctype, collection=NW_PROCESSED_FILES.collection, fn=NW_PROCESSED_FILES.fn)
 
@@ -42,7 +47,7 @@ rule INIT_PUBMED_CACHE:
 
 
 rule FETCH_PUBMED_METADATA:
-    input: metadata="work/networks/network_metadata.txt", pubmed_cache="work/cache/pubmed.txt"
+    input: metadata="work/networks/network_metadata.txt.defaulted", pubmed_cache="work/cache/pubmed.txt"
     output: "work/networks/network_metadata.pubmed_extended"
     params: pubmed_cache="work/cache/pubmed.txt", fetchsize="200"
     shell: "python builder/fetch_pubmed_metadata.py {input.metadata} {output} {input.pubmed_cache} --fetchsize={params.fetchsize}"
