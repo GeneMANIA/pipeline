@@ -32,9 +32,12 @@ def extract_network_groups(input_file, output_file):
     network_groups.drop_duplicates(inplace=True)
     network_groups.sort(inplace=True)
 
-    network_groups.columns = ['NAME']
+    network_groups.columns = ['CODE']
     network_groups['ORGANISM_ID'] = 1 # TODO
-    network_groups['CODE'] = network_groups['NAME']
+
+    # TODO: allow user-friendly network names configured
+    # in an additional data file
+    network_groups['NAME'] = network_groups['CODE']
     network_groups['DESCRIPTION'] = ''
 
     # want ids starting at 1
@@ -95,7 +98,6 @@ def extract_network_metadata(input_file, output_file):
     metadata['url'] = metadata.apply(format_pubmed_url, axis=1)
     metadata['publicationName'] = metadata['journal_short']
     metadata['authors'] = metadata.apply(format_authors_list, axis=1)
-    print(metadata['authors'])
 
     # test filler, to see what comes up in the actual website
     metadata['other'] = 'other'
