@@ -11,9 +11,9 @@ import pandas as pd
 
 def main(left_file, right_file, output_file, join_column):
     left_df = pd.read_csv(left_file, sep='\t', header=0,
-                          encoding='UTF8')
+                          encoding='UTF8', dtype=str)
     right_df = pd.read_csv(right_file, sep='\t', header=0,
-                           encoding='UTF8')
+                           encoding='UTF8', dtype=str)
 
     merged = pd.merge(left_df, right_df, how='inner', on=join_column)
 

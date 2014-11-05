@@ -68,7 +68,8 @@ def deduper(group_frame):
 
 def main(inputfile, outputfile):
 
-    network_metadata = pd.read_csv(inputfile, sep='\t', header=0, index_col=0, encoding='UTF8')
+    network_metadata = pd.read_csv(inputfile, sep='\t', header=0, index_col=0,
+                                   encoding='UTF8', dtype=str)
 
     # new cols for network naming steps
     #network_metadata['auto_name'] = ''
