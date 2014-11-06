@@ -20,7 +20,7 @@ rule CLEAN_FUNCTIONS:
 # removing old build files, so
 rule TIDY_QUERIED_FUNCTIONS:
     input: annos=expand("data/functions/{fn}.txt", fn=ANNOS_FILES.fn), symbols="work/identifiers/symbols.txt"
-    output: annos="work/functions/all_annos.txt", names="work/functions/anno_names.txt"
+    output: annos="work/functions/all_annos.txt", names="work/functions/all_anno_names.txt"
     shell: "python builder/filter_go_annotations.py clean {input.annos} {input.symbols} {output.annos} {output.names}"
 
 rule ENRICHMENT_FUNCTIONS:
@@ -44,7 +44,7 @@ rule COMBINING_FUNCTIONS_CC:
     shell: "python builder/filter_go_annotations.py filter {input} {output} 3 300 --branch cellular_component"
 
 rule GENERIC_DB_FUNCTIONS:
-    input: function_file = "work/functions/enrichment/enrichment_annos.txt", function_groups="result/generic_db/ONTOLOGIES.txt", function_names="work/functions/anno_names.txt"
+    input: function_file = "work/functions/enrichment/enrichment_annos.txt", function_groups="result/generic_db/ONTOLOGIES.txt", function_names="work/functions/all_anno_names.txt"
     output: "result/generic_db/ONTOLOGY_CATEGORIES.txt"
     shell: "python builder/extract_functions.py functions {input.function_file} {input.function_groups} {input.function_names} {output}"
 
