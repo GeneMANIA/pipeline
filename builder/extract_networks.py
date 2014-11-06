@@ -52,7 +52,7 @@ def extract_network_groups(input_file, output_file):
 def format_pubmed_url(row):
     pubmed_id = row['pubmed_id']
 
-    if pubmed_id:
+    if pubmed_id and pubmed_id != '0':
         return 'http://www.ncbi.nlm.nih.gov/pubmed/%s' % int(pubmed_id)
     else:
         return ''
@@ -98,13 +98,21 @@ def extract_network_metadata(input_file, output_file):
     metadata['url'] = metadata.apply(format_pubmed_url, axis=1)
     metadata['publicationName'] = metadata['journal_short']
     metadata['authors'] = metadata.apply(format_authors_list, axis=1)
+    metadata['yearPublished'] = metadata['year']
 
-    # test filler, to see what comes up in the actual website
-    metadata['other'] = 'other'
-    metadata['sourceUrl'] = 'sourceUrl'
-    metadata['processingDescription'] = 'processingDescription'
-    metadata['source'] = 'source'
-    metadata['reference'] = 'reference'
+    # contained keywords like 'Small-scale studies', seems to not be used
+    # set to empty
+    metadata['other'] = ''
+
+    # this is set to the nice network group name in old metadata, e.g. 'Co-expression'
+    # but hopefully not used. set to empty
+    metadata['networkType'] = ''
+
+    # empty values for misc other stuff, needs explanation TODO
+    metadata['source'] = 'None'
+    metadata['reference'] = ''
+    metadata['processingDescription'] = ''
+    metadata['sourceUrl'] = ''
 
     # write output
     metadata.to_csv(output_file, sep='\t', header=False, index=False,
