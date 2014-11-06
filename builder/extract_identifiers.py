@@ -80,6 +80,8 @@ def extract_naming_sources(identifiers_file, naming_sources_file):
     # SHORT_NAME and RANK may not be used anymore
     naming_sources['SHORT_NAME'] = ''
     naming_sources['RANK'] = 0
+    # quick rank test. TODO: add config for this
+    naming_sources.loc[naming_sources['NAME'] == 'Gene Name', 'RANK'] = 10
 
     naming_sources.to_csv(naming_sources_file, sep='\t', header=False, index=True,
                           index_label='ID', columns=['NAME', 'RANK', 'SHORT_NAME'])

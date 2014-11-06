@@ -21,18 +21,15 @@ import argparse
 import pandas as pd
 
 
-def load_functions(functions_file):
-    functions = pd.read_csv(functions_file, sep='\t', header=None,
-                            names=['NAME', 'DESCRIPTION'],
-                            dtype='str', na_filter=False)
-    return functions
-
-
 def extract_function_groups(input_files, output_file):
     '''
     create a dataframe from the list of input file names
     (not their contents). the automatically assigned id's
     will are written along with the list to the given output file.
+
+    this is setup to support multiple enrichment categories per organism,
+    but extract_function() support for this isn't complete. And no
+    one uses this functionality yet so TODO someday.
 
     :param input_files:
     :param output_file:
@@ -43,37 +40,50 @@ def extract_function_groups(input_files, output_file):
     groups.index += 1
     groups.index.name = 'ID'
 
-    groups.to_csv(output_file, sep='\t', header=True, index=True)
+    groups.to_csv(output_file, sep='\t', header=False, index=True)
 
 
-def extract_functions(input_files, groups_file, output_file):
+def extract_functions(input_file, groups_file, names_file, output_file):
 
-    groups = pd.read_csv(groups_file, sep='\t', header=0, index_col=0)
-    assert groups.index.name == 'ID'
+    groups = pd.read_csv(groups_file, sep='\t', header=None, index_col=0, names=['NAME'])
+    groups.index.name = 'ID'
 
-    all_functions = []
+    # find id corresponding to file
+    matched = groups[groups['NAME'] == input_file].index
 
-    for input_file in input_files:
-        # find id corresponding to file
-        matched = groups[groups['NAME'] == input_file].index
+    if len(matched) == 0:
+        raise Exception('Group file has no id: %s' % input_file)
+    elif len(matched) > 2:
+        raise Exception('Group file has multiple ids (expected 1): %s' % input_file)
 
-        if len(matched) == 0:
-            raise Exception('Group file has no id: %s' % input_file)
-        elif len(matched) > 2:
-            raise Exception('Group file has multiple ids (expected 1): %s' % input_file)
+    group_id = matched[0]
 
-        group_id = matched[0]
+    # load functions and names
+    functions = pd.read_csv(input_file, sep='\t', header=0,
+                            dtype='str', na_filter=False)
+    assert list(functions.columns) == ['category', 'gene']
 
-        functions = load_functions(input_file)
-        functions['ONTOLOGY_ID'] = group_id
+    function_names = pd.read_csv(names_file, sep='\t', header=0,
+                                 dtype='str', na_filter=False)
+    assert list(function_names.columns) == ['category', 'name']
 
-        all_functions.append(functions)
+    # extract names we need by joining on the annotations
 
-    all_functions = pd.concat(all_functions)
-    all_functions.index += 1
-    all_functions.index.name = 'ID'
+    functions.drop('gene', axis=1, inplace=True)
+    functions.drop_duplicates(['category'], inplace=True)
 
-    all_functions.to_csv(output_file, sep='\t', header=True, index=True)
+    needed_names = pd.merge(functions, function_names, on='category', how='inner')
+    needed_names['ONTOLOGY_ID'] = group_id
+
+    # fixup naming to generic_db conventions
+    needed_names.rename(columns={'name': 'DESCRIPTION', 'category': 'NAME'}, inplace=True)
+
+    needed_names.reset_index(drop=True, inplace=True)
+    needed_names.index += 1
+    needed_names.index.name = 'ID'
+
+    needed_names.to_csv(output_file, sep='\t', header=False, index=True,
+                         columns=['ONTOLOGY_ID', 'NAME', 'DESCRIPTION'])
 
 
 if __name__ == '__main__':
@@ -88,9 +98,10 @@ if __name__ == '__main__':
 
     # functions
     parser_functions = subparsers.add_parser('functions')
-    parser_functions.add_argument('output', help='output functions file')
+    parser_functions.add_argument('annos', help='input file of category/gene annotation pairs')
     parser_functions.add_argument('groups', help='function groups file')
-    parser_functions.add_argument('inputs', help='1 or more input files', nargs='+')
+    parser_functions.add_argument('names', help='category names file')
+    parser_functions.add_argument('output', help='output functions file')
 
     # parse args and dispatch
     args = parser.parse_args()
@@ -98,7 +109,7 @@ if __name__ == '__main__':
     if args.subparser_name == 'function_groups':
         extract_function_groups(args.inputs, args.output)
     elif args.subparser_name == 'functions':
-        extract_functions(args.inputs, args.groups, args.output)
+        extract_functions(args.annos, args.groups, args.names, args.output)
     else:
         raise Exception('unexpected command')
 

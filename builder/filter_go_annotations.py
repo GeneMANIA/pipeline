@@ -35,16 +35,17 @@ def clean(input_file, symbols_file, output_file_annos, output_file_anno_names):
     annos.drop_duplicates(['category', 'id'], inplace=True)
 
     # write out clean two-column annotations file
-    annos.to_csv(output_file_annos, sep='\t', header=False, index=False, columns=['branch', 'category', 'id', 'gene_orig'])
+    annos.to_csv(output_file_annos, sep='\t', header=['branch', 'category', 'node_id', 'gene'], index=False, columns=['branch', 'category', 'id', 'gene_orig'])
 
     # write annotation category names
     names = annos[['category', 'name']].drop_duplicates().sort(['category'])
-    names.to_csv(output_file_anno_names, sep='\t', header=False, index=False)
+    names.to_csv(output_file_anno_names, sep='\t', header=True, index=False)
 
 
 def filter(input_file, output_file, min_size, max_size, branch_filter=None):
 
-    annos = pd.read_csv(input_file, sep='\t', header=None, na_filter=False, names=['branch', 'category', 'id', 'gene_orig'])
+    annos = pd.read_csv(input_file, sep='\t', header=0, na_filter=False)
+    assert list(annos.columns) == ['branch', 'category', 'node_id', 'gene']
 
     # subset annotations extracting branch of interest
     if branch_filter is not None:
@@ -54,7 +55,7 @@ def filter(input_file, output_file, min_size, max_size, branch_filter=None):
     grouped = annos.groupby("category")
 
     # count number of unique genes in each group
-    counts = grouped['id'].nunique()
+    counts = grouped['node_id'].nunique()
     counts.name = 'size'
 
     # only want annotations satisfying size constraints
@@ -62,10 +63,10 @@ def filter(input_file, output_file, min_size, max_size, branch_filter=None):
     wanted = wanted.reset_index() # push category into a column
 
     out = pd.merge(annos, wanted, left_on = 'category', right_on = 'category', how='inner')
-    out = out.ix[:, ('category', 'gene_orig')]
-    out.sort(columns=['category', 'gene_orig'], inplace=True)
+    out = out.ix[:, ('category', 'gene')]
+    out.sort(columns=['category', 'gene'], inplace=True)
 
-    out.to_csv(output_file, sep='\t', header=False, index=False, columns=['category', 'gene_orig'])
+    out.to_csv(output_file, sep='\t', header=True, index=False, columns=['category', 'gene'])
 
 
 if __name__ == "__main__":

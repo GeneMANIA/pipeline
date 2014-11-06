@@ -53,6 +53,8 @@ rule POST_SPARSIFY:
         -log "{LOG_DIR}/PostSparsifier.log" \
         &&  touch {output}
         """
+    # disable this step if needed
+    #shell: "touch {output}"
 
 rule NODE_DEGREES:
     message: "node degrees"
@@ -69,7 +71,7 @@ rule ANNOTATION_DATA:
     input: "work/flags/engine.node_degrees.flag", "result/generic_db/GO_CATEGORIES/1.annos.txt" # TODO org id
     output: "work/flags/engine.annotation_data.flag"
     shell: """java -cp {JAR_FILE} -Xmx2G org.genemania.engine.apps.AnnotationCacheBuilder \
-        -geneCol 1 -termCol 2 \
+        -geneCol 2 -termCol 1 \
         -indexDir "{LUCENE_INDEX_DIR}" -cachedir "{NETWORK_CACHE_DIR}" \
         -log "{LOG_DIR}/AnnotationCacheBuider.log" -annodir "{GO_CATEGORIES_DIR}" \
         && touch {output}
@@ -106,6 +108,8 @@ rule DEFAULT_COEXPRESSION:
         -log "{LOG_DIR}/DefaultNetworkSelector.log" \
         && touch {output}
         """
+    # disable this step if needed
+    #shell: "touch {output}"
 
 
 rule PRECOMBINE_NETWORKS:
