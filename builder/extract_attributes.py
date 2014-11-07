@@ -4,11 +4,10 @@ import pandas as pd
 
 # see GENERIC_DB.md for output file formats
 
-def extract_attribute_groups(input_file, output_file):
+def extract_attribute_groups(input_file, output_file, organism_id):
     data = pd.read_csv(input_file, sep='\t', header=0, index_col=0)
 
-    # TODO: pass in org id
-    data['ORGANISM_ID'] = 1
+    data['ORGANISM_ID'] = organism_id
     data['CODE'] = data['name']
 
     data.to_csv(output_file, sep='\t',
@@ -17,7 +16,8 @@ def extract_attribute_groups(input_file, output_file):
                 header=False, index=True)
 
 
-def extract_attributes(input_files, groups_file, output_file, key_lstrip=None, key_rstrip=None):
+def extract_attributes(input_files, groups_file, output_file, organism_id,
+                       key_lstrip=None, key_rstrip=None):
 
     groups = pd.read_csv(groups_file, sep='\t', header=0, index_col=0)
     assert groups.index.name == 'id'
@@ -47,7 +47,7 @@ def extract_attributes(input_files, groups_file, output_file, key_lstrip=None, k
                             dtype='str', na_filter=False)
 
         attributes['ATTRIBUTE_GROUP_ID'] = group_id
-        attributes['ORGANISM_ID'] = 1 # TODO
+        attributes['ORGANISM_ID'] = organism_id
         attributes['EXTERNAL_ID'] = attributes['NAME']
 
         all_attributes.append(attributes)
@@ -65,11 +65,13 @@ if __name__ == '__main__':
 
     # attribute groups
     parser_attribute_groups = subparsers.add_parser('attribute_groups')
+    parser_attribute_groups.add_argument('organism_id', help='organism id')
     parser_attribute_groups.add_argument('output', help='output file')
     parser_attribute_groups.add_argument('input', help='table of attribute group metadata')
 
     # attributes
     parser_attributes = subparsers.add_parser('attributes')
+    parser_attributes.add_argument('organism_id', help='organism id')
     parser_attributes.add_argument('output', help='output file')
     parser_attributes.add_argument('groups', help='table of attribute group metadata')
     parser_attributes.add_argument('inputs', help='something', nargs='+')
@@ -82,8 +84,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.subparser_name == 'attribute_groups':
-        extract_attribute_groups(args.input, args.output)
+        extract_attribute_groups(args.input, args.output, args.organism_id)
     elif args.subparser_name == 'attributes':
-        extract_attributes(args.inputs, args.groups, args.output, args.key_lstrip, args.key_rstrip)
+        extract_attributes(args.inputs, args.groups, args.output, args.organism_id,
+                           args.key_lstrip, args.key_rstrip)
     else:
         raise Exception('unexpected command')

@@ -72,9 +72,11 @@ rule EXTRACT_NETWORKS:
 
 
 rule EXTRACT_NETWORK_GROUPS:
-    input: "work/networks/network_metadata.txt.processed"
+    input: metadata="work/networks/network_metadata.txt.processed", cfg="data/organism.cfg"
     output: "result/generic_db/NETWORK_GROUPS.txt"
-    shell: "python builder/extract_networks.py network_groups {input} {output}"
+    shell: """ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1)
+        python builder/extract_networks.py network_groups $ORGANISM_ID {input.metadata} {output}
+        """
 
 
 rule EXTRACT_NETWORK_METADATA:

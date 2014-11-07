@@ -35,9 +35,11 @@ rule IDENTIFIER_DESCRIPTIONS:
     shell: "python builder/clean_identifier_descriptions.py {input} --output {output}"
 
 rule GENERIC_DB_NODES:
-    input: "work/identifiers/symbols.txt"
+    input: symbols="work/identifiers/symbols.txt", cfg="data/organism.cfg"
     output: "result/generic_db/NODES.txt"
-    shell: "python builder/extract_identifiers.py nodes {ORGANISM_ID} {input} {output}"
+    shell: """ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1)
+        python builder/extract_identifiers.py nodes $ORGANISM_ID {input.symbols} {output}
+        """
 
 rule GENERIC_DB_GENES:
     input: idents="work/identifiers/symbols.txt", naming_sources="result/generic_db/GENE_NAMING_SOURCES.txt", organism_cfg="data/organism.cfg"

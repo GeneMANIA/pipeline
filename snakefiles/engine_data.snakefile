@@ -68,7 +68,7 @@ rule NODE_DEGREES:
 
 rule ANNOTATION_DATA:
     message: "annotation data"
-    input: "work/flags/engine.node_degrees.flag", "result/generic_db/GO_CATEGORIES/1.annos.txt" # TODO org id
+    input: "work/flags/engine.node_degrees.flag", "work/flags/generic_db.function_data.flag"
     output: "work/flags/engine.annotation_data.flag"
     shell: """java -cp {JAR_FILE} -Xmx2G org.genemania.engine.apps.AnnotationCacheBuilder \
         -geneCol 2 -termCol 1 \

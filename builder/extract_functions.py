@@ -21,23 +21,25 @@ import argparse
 import pandas as pd
 
 
-def extract_function_groups(input_files, output_file):
+def extract_function_groups(input_files, output_file, organism_id):
     '''
     create a dataframe from the list of input file names
-    (not their contents). the automatically assigned id's
-    will are written along with the list to the given output file.
+    (not their contents)
 
-    this is setup to support multiple enrichment categories per organism,
-    but extract_function() support for this isn't complete. And no
-    one uses this functionality yet so TODO someday.
+    the data schema is setup to support multiple enrichment categories per organism,
+    but our data pipeline code doesn't support this yet, and instead
+    just assumes a single enrichment cateogry with same is as the organism id.
+
+    TODO someday.
 
     :param input_files:
     :param output_file:
     :return:
     '''
 
-    groups = pd.DataFrame(input_files, columns=['NAME'])
-    groups.index += 1
+    assert len(input_files) < 2 # we only allow 1
+
+    groups = pd.DataFrame(input_files, columns=['NAME'], index=[organism_id])
     groups.index.name = 'ID'
 
     groups.to_csv(output_file, sep='\t', header=False, index=True)
@@ -93,6 +95,7 @@ if __name__ == '__main__':
 
     # function groups
     parser_function_groups = subparsers.add_parser('function_groups')
+    parser_function_groups.add_argument('organism_id', help='organism id')
     parser_function_groups.add_argument('output', help='output function groups file')
     parser_function_groups.add_argument('inputs', help='1 or more input files', nargs='+')
 
@@ -107,7 +110,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.subparser_name == 'function_groups':
-        extract_function_groups(args.inputs, args.output)
+        extract_function_groups(args.inputs, args.output, args.organism_id)
     elif args.subparser_name == 'functions':
         extract_functions(args.annos, args.groups, args.names, args.output)
     else:

@@ -21,7 +21,7 @@ import pandas as pd
 import numpy as np
 
 
-def extract_network_groups(input_file, output_file):
+def extract_network_groups(input_file, output_file, organism_id):
 
     output_cols =  ['ID', 'NAME', 'CODE', 'DESCRIPTION', 'ORGANISM_ID']
 
@@ -33,7 +33,7 @@ def extract_network_groups(input_file, output_file):
     network_groups.sort(inplace=True)
 
     network_groups.columns = ['CODE']
-    network_groups['ORGANISM_ID'] = 1 # TODO
+    network_groups['ORGANISM_ID'] = organism_id
 
     # TODO: allow user-friendly network names configured
     # in an additional data file
@@ -147,6 +147,7 @@ if __name__ == '__main__':
 
     # networks groups
     parser_network_groups = subparsers.add_parser('network_groups')
+    parser_network_groups.add_argument('organism_id', help='organism id')
     parser_network_groups.add_argument('input', help='1 or more input files')
     parser_network_groups.add_argument('output', help='output networks groups file')
 
@@ -165,7 +166,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.subparser_name == 'network_groups':
-        extract_network_groups(args.input, args.output)
+        extract_network_groups(args.input, args.output, args.organism_id)
     elif args.subparser_name == 'network_metadata':
         extract_network_metadata(args.input, args.output)
     elif args.subparser_name == 'networks':

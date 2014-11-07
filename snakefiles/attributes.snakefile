@@ -109,16 +109,20 @@ rule UPDATE_ATTRIBUTE_DESCRIPTIONS:
 
 # generic db files for attributes
 rule GENERIC_DB_ATTRIBUTE_GROUPS:
-    input: "work/attributes/metadata.txt"
+    input: metadata="work/attributes/metadata.txt", cfg="data/organism.cfg"
     output: "result/generic_db/ATTRIBUTE_GROUPS.txt"
-    shell: "python builder/extract_attributes.py attribute_groups {output} {input}"
+    shell: """ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1)
+        python builder/extract_attributes.py attribute_groups $ORGANISM_ID {output} {input.metadata}
+        """
 
 # generic db files for attributes
 rule GENERIC_DB_ATTRIBUTES:
     input: desc=expand("work/attributes/{collection}/{fn}.desc.cleaned", zip, collection=DESCS.collection, fn=DESCS.fn),
-        metadata='work/attributes/metadata.txt'
+        metadata='work/attributes/metadata.txt', cfg="data/organism.cfg"
     output: "result/generic_db/ATTRIBUTES.txt"
-    shell: "python builder/extract_attributes.py attributes {output} {input.metadata} {input.desc} --key_lstrip='work/' --key_rstrip='.desc.cleaned'"
+    shell: """ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1)
+    python builder/extract_attributes.py attributes $ORGANISM_ID {output} {input.metadata} {input.desc} --key_lstrip='work/' --key_rstrip='.desc.cleaned'
+    """
 
 # generic db attribute data files for engine cache
 #

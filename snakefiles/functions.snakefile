@@ -49,24 +49,47 @@ rule GENERIC_DB_FUNCTIONS:
     shell: "python builder/extract_functions.py functions {input.function_file} {input.function_groups} {input.function_names} {output}"
 
 rule GENERIC_DB_FUNCTION_GROUPS:
-    input: annos="work/functions/enrichment/enrichment_annos.txt"
+    input: annos="work/functions/enrichment/enrichment_annos.txt", cfg="data/organism.cfg"
     output: "result/generic_db/ONTOLOGIES.txt"
-    shell: "python builder/extract_functions.py function_groups {output} {input}"
+    shell: """ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1)
+        python builder/extract_functions.py function_groups $ORGANISM_ID {output} {input.annos}
+        """
 
-# TODO: split this up
-rule COPY_GENERIC_DB_FUNCTION_DATA:
-    input: "work/functions/enrichment/enrichment_annos.txt",
-        "work/functions/combining/BP_annos.txt",
-        "work/functions/combining/MF_annos.txt",
-        "work/functions/combining/CC_annos.txt"
-    output: "result/generic_db/GO_CATEGORIES/1.annos.txt",  # TODO org id
-        "result/generic_db/GO_CATEGORIES/1_BP.txt",
-        "result/generic_db/GO_CATEGORIES/1_MF.txt",
-        "result/generic_db/GO_CATEGORIES/1_CC.txt",
-        "work/flags/generic_db.function_data.flag"
-    shell: """sed '1d;$d' {input[0]} > {output[0]} && \
-           sed '1d;$d' {input[1]} > {output[1]} && \
-           sed '1d;$d' {input[2]} > {output[2]} && \
-           sed '1d;$d' {input[3]} > {output[3]} && \
-           touch {output[4]}
-           """
+
+# this next part is a bit tricky. our old file naming
+# conventions have the organism id in the go category files.
+# load the id from the organism config file, expand the list
+# of target file names, and setup copy rules that just strip
+# the header from the corresponding source files. create
+# a flag file to connect everything together, until we
+# work out how to wire things together with the file lists
+# as direct dependencies.
+
+
+from builder import getparam
+TEMP_ORGANISM_ID = getparam.getparam("data/organism.cfg", "gm_organism_id", 1)
+
+GOCAT_FILES = expand(["result/generic_db/GO_CATEGORIES/{ORGANISM_ID}.annos.txt",
+    "result/generic_db/GO_CATEGORIES/{ORGANISM_ID}_BP.txt",
+    "result/generic_db/GO_CATEGORIES/{ORGANISM_ID}_MF.txt",
+    "result/generic_db/GO_CATEGORIES/{ORGANISM_ID}_CC.txt"],
+     ORGANISM_ID=TEMP_ORGANISM_ID)
+
+rule COPY_GOCAT_COMBINING_FILES:
+    input: "work/functions/combining/{GO_BRANCH}_annos.txt"
+    output: "result/generic_db/GO_CATEGORIES/{ORGANISM_ID}_{GO_BRANCH}.txt"
+    shell: "sed '1d;$d' {input} > {output}"
+
+
+rule COPY_GOCAT_ENRICHMENT_FILES:
+    input: "work/functions/enrichment/enrichment_annos.txt"
+    output: "result/generic_db/GO_CATEGORIES/{ORGANISM_ID}.annos.txt"
+    shell: "sed '1d;$d' {input} > {output}"
+
+
+rule CONTROL_COPY:
+    input: cfg="data/organism.cfg", files=GOCAT_FILES
+    output: "work/flags/generic_db.function_data.flag"
+    shell: "touch {output}"
+
+

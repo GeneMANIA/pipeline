@@ -27,15 +27,6 @@ rule VERY_CLEAN:
         rm -rf result
         """
 
-# load any properties we need in the snakefiles
-import os
-if os.path.exists("data/organism.cfg"):
-    from configobj import ConfigObj
-    organism_config = ConfigObj("data/organism.cfg", encoding="utf8")
-    ORGANISM_ID = organism_config['gm_organism_id']
-else:
-    ORGANISM_ID = 1
-
 # load all the snakefiles
 include: 'snakefiles/common.snakefile'
 include: 'snakefiles/identifiers.snakefile'
