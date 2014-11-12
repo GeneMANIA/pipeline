@@ -4,7 +4,8 @@
 # create a cleaned set of identifiers and descriptions from a set of input files
 
 SYMBOL_FILES = glob_wildcards('data/identifiers/symbols/{fn}')
-DESCRIPTIONS_FILES = glob_wildcards('data/identifiers/descriptions/{fn}')
+DESCRIPTION_FILES = glob_wildcards('data/identifiers/descriptions/{fn}')
+RAW_FILES = glob_wildcards('data/identifiers/mixed_table/{fn}')
 
 # filter out files starting with '.', e.g. .gitignore
 ignores = [i for i in range(len(SYMBOL_FILES.fn)) if SYMBOL_FILES.fn[i].startswith('.')]
@@ -12,13 +13,26 @@ for i in range(len(SYMBOL_FILES)):
     for ignore in ignores:
         del(SYMBOL_FILES[i][ignore])
 
+COMBINED_SYMBOL_FILES = expand('data/identifeirs/symbols/{fn}', fn=SYMBOL_FILES.fn) + expand('work/identifiers/symbols/{fn}.triplets', fn=RAW_FILES.fn)
+COMBINED_DESCRIPTION_FILES = expand('data/identifiers/descriptions/{fn}', fn=DESCRIPTION_FILES.fn) + expand('work/identifiers/descriptions/{fn}.desc', fn=RAW_FILES.fn)
+
+
+# raw_file, should only be one. reformat
+# into 3 column format, with a bit of cleaning applied
+rule MELT_RAW_IDENTIFIERS:
+    input: "data/identifiers/mixed_table/{fn}"
+    output: symbols="work/identifiers/symbols/{fn}.triplets", descriptions="work/identifiers/descriptions/{fn}.desc"
+    shell: "python builder/melt_raw_identifiers.py {input} {output.symbols} {output.descriptions}"
+
+
 # target rule for symbol scrubbing
 rule SCRUB_SYMBOLS:
     input: "work/identifiers/symbols.txt"
 
 rule APPLY_SYMBOL_SCRUBBING:
     message: "load all identifier input files containing id/symbol/source triplets and produce a single cleaned file"
-    input: expand("data/identifiers/symbols/{fn}", fn=SYMBOL_FILES.fn)
+    #input: expand("data/identifiers/symbols/{fn}", fn=SYMBOL_FILES.fn)
+    input: COMBINED_SYMBOL_FILES
     output: "work/identifiers/symbols.txt"
     log: "work/identifiers/symbols.log"
     shell: "python builder/clean_identifiers.py {input} --output {output} --log {log}"
