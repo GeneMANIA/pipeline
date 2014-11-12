@@ -206,9 +206,114 @@ class Importer(object):
         shutil.copyfile(old_file, new_file)
 
     def import_attributes(self):
-        # TODO
-        pass
+        """two places to find attributes, in the web-import folder
+        and in locations specified in the master config's Attributes section
 
+        looks like the data file paths are not consistent in the folder
+        they are relative to, so fix up
+
+        also fix up the MAGIC_ORG_IDENTIFIER hack by applying the organisnm short id
+        """
+
+        # from web-import
+        path = os.path.join(self.old_dir, 'attributes', 'import')
+        attrib_metadata_file = os.path.join(path, 'attribute-metadata.cfg')
+        attrib_metadata = ConfigObj(attrib_metadata_file, encoding='UTF8')
+
+        for name in attrib_metadata:
+            attrib = attrib_metadata[name]
+
+            # file path fixes
+            data_file = attrib['assoc_file']
+            desc_file = attrib['desc_file']
+
+            data_file = os.path.join('attributes', 'import', data_file)
+            desc_file = os.path.join('attributes', 'import', desc_file)
+
+            attrib['assoc_file'] = data_file
+            attrib['desc_file'] = desc_file
+
+            # import
+            self.import_attribute_file('web_import', name, attrib)
+
+        # from master-config
+        attrib_metadata = self.master_cfg['Attributes']
+        for name in attrib_metadata:
+            attribs = attrib_metadata[name]
+
+            # file path fixes
+            data_file = attribs['assoc_file']
+            desc_file = attribs['desc_file']
+
+            data_file = data_file.replace('MAGIC_ORG_IDENTIFIER', self.short_id)
+            desc_file = desc_file.replace('MAGIC_ORG_IDENTIFIER', self.short_id)
+
+            attribs['assoc_file'] = data_file
+            attribs['desc_file'] = desc_file
+
+            # import
+            self.import_attribute_file('manual', name, attrib)
+
+    def import_attribute_file(self, collection, name, attrib):
+
+        print(collection, name)
+
+        # check if presence of the data files
+        data_file = attrib['assoc_file']
+        desc_file = attrib['desc_file']
+
+        data_file = os.path.join(self.old_dir, data_file)
+        desc_file = os.path.join(self.old_dir, desc_file)
+
+        assert os.path.exists(data_file)
+        assert os.path.exists(desc_file)
+
+        # create attribute metadata
+
+        cfg = ConfigObj(encoding='UTF8')
+
+        cfg['name'] = attrib['name']
+        cfg['desc'] = attrib['desc']
+        cfg['linkout_label'] = attrib['linkout_label']
+        cfg['linkout_url'] = attrib['linkout_url']
+        cfg['default_selected'] = attrib['default_selected']
+        cfg['pub_name'] = attrib['pub_name']
+        cfg['pub_url'] = attrib['pub_url']
+
+        # think this is always true
+        assert attrib['attributes_identified_by'] == 'external_id'
+
+        # drop into correct processing location depending on the
+        # data format
+        data_format = attrib['assoc_format']
+        if data_format == '1':
+            proctype = 'gene-attribute-pairs'
+        elif data_format == '2':
+            proctype = 'attribute-gene-list'
+        else:
+            raise Exception('unexpected data format: ' + data_format)
+
+        # naming of the new files, config, data and descriptions, have the same
+        # base name with specific extensions, and no pointers from the
+        # config file to the corresponding data file
+        basename = os.path.basename(data_file)
+        if basename.endswith('.txt'):
+            basename = basename[:-4]
+
+        new_path = os.path.join(self.new_dir, 'attributes', proctype, collection)
+
+        if not os.path.exists(new_path):
+            os.makedirs(new_path)
+
+        new_data_name = os.path.join(new_path, basename + '.txt')
+        new_desc_name = os.path.join(new_path, basename + '.desc')
+        new_cfg_name = os.path.join(new_path, basename + '.cfg')
+
+        # write the config, and copy the data
+        cfg.filename = new_cfg_name
+        cfg.write()
+        shutil.copyfile(data_file, new_data_name)
+        shutil.copyfile(desc_file, new_desc_name)
 
 def main(old_dir, short_id, new_dir):
 
