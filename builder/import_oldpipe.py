@@ -212,7 +212,7 @@ class Importer(object):
         looks like the data file paths are not consistent in the folder
         they are relative to, so fix up
 
-        also fix up the MAGIC_ORG_IDENTIFIER hack by applying the organisnm short id
+        also fix up the MAGIC_ORG_IDENTIFIER hack by applying the organism short id
         """
 
         # from web-import
