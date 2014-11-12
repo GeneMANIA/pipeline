@@ -1,6 +1,6 @@
 
 """the so-called 'raw' identifiers file is the output of a process that
-runs against the Ensemble database to produce identifiers in a particular
+runs against the Ensembl database to produce identifiers in a particular
 format
 
 note there is an old parser for these in identifiers/parsers.py. we're now
