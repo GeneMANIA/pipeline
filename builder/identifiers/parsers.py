@@ -34,7 +34,7 @@ class RawGeneEntity():
         self.d = d
         
     def symbols(self):
-        for source, value in self.d.iteritems():
+        for source, value in self.d.items():
             if source !=  RAW_GMID and source != RAW_DEFINITION and source != RAW_BIOTYPE:
                 if source in RAW_NON_DELIMITED_FIELDS:
                     yield (value, source)
