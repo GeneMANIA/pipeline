@@ -152,10 +152,9 @@ rule TABULATE_ATTRIBUTE_METADATA:
     input: "work/attributes/metadata.txt"
 
 rule APPLY_TABULATION:
-    #input: expand("work/attributes/{proctype}/{collection}/{fn}.cfg.cp", zip, collection=CFGS.collection, fn=CFGS.fn)
     input: ALL_CFGS
     output: "work/attributes/metadata.txt"
-    shell: "python builder/tabulate_cfgs.py {input} {output} --key_lstrip='work/' --key_rstrip='.cfg.cp'"
+    shell: "python builder/tabulate_cfgs.py {input} {output} --key_lstrip='data/' --key_rstrip='.cfg'"
 
 # enumerate, needs name. not needed anymore if tabulation good enough?
 rule ENUMERATE_ATTRIBUTE_METADATA:

@@ -50,7 +50,7 @@ def copy_attributes(mapfile, newdir, filenames, key_lstrip=None, key_rstrip=None
 
     if os.path.exists(newdir):
         shutil.rmtree(newdir)
-    os.mkdir(newdir)
+    os.makedirs(newdir)
 
     metadata = pd.read_csv(mapfile, sep='\t')
     filenames = pd.DataFrame(filenames, columns=['filename'])
