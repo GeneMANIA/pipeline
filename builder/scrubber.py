@@ -25,6 +25,7 @@ def main(inputfile, identsfile, outputfile, col, symbolcol, logfile):
 
     # remove unknowns
     clean_data = indata[indata['_upper'].isin(idents['_upper'])]
+    clean_data = clean_data.copy() # not a view so can change without causing pandas to complain
 
     # drop the _upper column, write output
     clean_data.drop('_upper', axis=1, inplace=True)
