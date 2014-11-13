@@ -289,7 +289,7 @@ class Importer(object):
         if data_format == '1':
             proctype = 'gene-attrib-list'
         elif data_format == '2':
-            proctype = 'attrib-desc-gene-list'
+            proctype = 'attrib-gene-list'
         else:
             raise Exception('unexpected data format: ' + data_format)
 
