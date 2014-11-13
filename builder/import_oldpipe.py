@@ -287,9 +287,9 @@ class Importer(object):
         # data format
         data_format = attrib['assoc_format']
         if data_format == '1':
-            proctype = 'gene-attribute-pairs'
+            proctype = 'gene-attrib-list'
         elif data_format == '2':
-            proctype = 'attribute-gene-list'
+            proctype = 'attrib-desc-gene-list'
         else:
             raise Exception('unexpected data format: ' + data_format)
 
