@@ -201,7 +201,7 @@ class Importer(object):
 
         org_id = self.master_cfg[self.short_id]['gm_organism_id']
         old_file = os.path.join(self.old_dir, 'GoCategories', '%s.annos.txt' % org_id)
-        new_file = os.path.join(self.new_dir, 'go_annos.txt')
+        new_file = os.path.join(self.new_dir, 'functions', 'go_annos.txt')
 
         shutil.copyfile(old_file, new_file)
 
