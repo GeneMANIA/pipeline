@@ -151,7 +151,10 @@ rule TABULATE_ATTRIBUTE_METADATA:
 rule APPLY_TABULATION:
     input: ALL_CFGS
     output: "work/attributes/metadata.txt"
-    shell: "python builder/tabulate_cfgs.py {input} {output} --key_lstrip='data/' --key_rstrip='.cfg'"
+    #shell: "python builder/tabulate_cfgs.py {input} {output} --key_lstrip='data/' --key_rstrip='.cfg'"
+    run:
+        quoted_input = ' '.join('"%s"' % o for o in input)
+        shell("python builder/tabulate_cfgs.py {quoted_input} {output} --key_lstrip='data/' --key_rstrip='.cfg'")
 
 # enumerate, needs name. not needed anymore if tabulation good enough?
 rule ENUMERATE_ATTRIBUTE_METADATA:
@@ -202,8 +205,12 @@ rule GENERIC_DB_COPY_ATTRIBUTE_DATA:
     input: mapfile="work/attributes/metadata.txt",  attribs=ALL_FNS
     output: "work/flags/generic_db.attribute_data.flag"
     params: newdir='result/generic_db/ATTRIBUTES'
-    shell: "python builder/rename_data_files.py attribs {input.mapfile} {params.newdir} {input.attribs} \
-        --key_lstrip='work/' --key_rstrip='.txt.mapped' && touch {output}"
+    #shell: "python builder/rename_data_files.py attribs {input.mapfile} {params.newdir} {input.attribs} \
+    #    --key_lstrip='work/' --key_rstrip='.txt.mapped' && touch {output}"
+    run:
+        quoted_input_attribs = ' '.join('"%s"' % o for o in input.attribs)
+        shell("python builder/rename_data_files.py attribs {input.mapfile} {params.newdir} {quoted_input_attribs} " \
+         "--key_lstrip='work/' --key_rstrip='.txt.mapped' && touch {output}")
 
 rule CLEAN_ATTRIBUTES:
     shell: """

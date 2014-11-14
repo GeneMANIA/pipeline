@@ -10,8 +10,11 @@ rule PROCESS_PROFILES_P2N:
     input: data="data/networks/profile/{collection}/{fn}.txt", mapping="work/identifiers/symbols.txt"
     output: "work/networks/profile/{collection}/{fn}.txt.p2n"
     log: "work/networks/profile/{collection}/{fn}.txt.p2n.log"
-    params: proftype='binary', cor="pearson_bin_log_no_norm", threshold="auto"
-    shell: 'java -Xmx512m -cp {JAR_FILE} org.genemania.engine.core.evaluation.ProfileToNetworkDriver -in "{input.data}" -out "{output}" -log "{log}" -syn "{input.mapping}" -proftype {params.proftype} -cor {params.cor} -threshold {params.threshold} -keepAllTies -limitTies'
+    params: proftype='continuous', cor="pearson", threshold="auto"
+    shell: 'java -Xmx1G -cp {JAR_FILE} org.genemania.engine.core.evaluation.ProfileToNetworkDriver \
+        -in "{input.data}" -out "{output}" -log "{log}" -syn "{input.mapping}" \
+        -proftype {params.proftype} -cor {params.cor} -threshold {params.threshold} \
+        -keepAllTies -limitTies'
 
 rule PROCESS_PROFILES_NN:
     input: data="work/networks/profile/{collection}/{fn}.txt.p2n", mapping="work/identifiers/symbols.txt"

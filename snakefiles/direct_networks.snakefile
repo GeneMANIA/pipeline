@@ -9,7 +9,7 @@ rule WEIGHT_CHECKED_NETWORKS:
     input: "data/networks/direct/{collection}/{fn}.txt"
     output: "work/networks/direct/{collection}/{fn}.txt.wc"
     log: "work/networks/direct/{collection}/{fn}.txt.wc.log"
-    shell: 'python builder/fix_weights.py {input} {output}'
+    shell: 'python builder/fix_weights.py "{input}" "{output}"'
 
 rule PROCESS_DIRECT_NETWORKS:
     input: data="work/networks/direct/{collection}/{fn}.txt.wc", mapping="work/identifiers/symbols.txt"

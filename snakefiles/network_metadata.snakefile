@@ -16,7 +16,10 @@ rule TABULATE_NETWORK_METADATA:
 rule APPLY_NETWORK_METADATA_TABULATION:
     input: expand("data/networks/{proctype}/{collection}/{fn}.cfg", zip, proctype=NW_CFGS.proctype, collection=NW_CFGS.collection, fn=NW_CFGS.fn)
     output: "work/networks/network_metadata.txt"
-    shell: "python builder/tabulate_cfgs.py {input} {output} --key_lstrip='data/' --key_rstrip='.cfg'"
+    #shell: "python builder/tabulate_cfgs.py {input} {output} --key_lstrip='data/' --key_rstrip='.cfg'"
+    run:
+        quoted_input = ' '.join('"%s"' % o for o in input)
+        shell("python builder/tabulate_cfgs.py {quoted_input} {output} --key_lstrip='data/' --key_rstrip='.cfg'")
 
 rule SET_MISSING_NETWORK_METADATA:
     input: "work/networks/network_metadata.txt"
@@ -29,7 +32,7 @@ rule NETWORK_STATS_FILES:
 rule COMPUTE_NETWORK_STATS:
     input: "work/networks/{proctype}/{collection}/{fn}.txt.nn"
     output: "work/networks/{proctype}/{collection}/{fn}.txt.nn.stats"
-    shell: "python builder/network_stats.py {input} {output}"
+    shell: 'python builder/network_stats.py "{input}" "{output}"'
 
 rule TABULATED_NETWORK_STATS:
     input: "work/networks/stats.txt"
@@ -37,7 +40,10 @@ rule TABULATED_NETWORK_STATS:
 rule TABULATE_NETWORK_STATS:
     input: expand("work/networks/{proctype}/{collection}/{fn}.txt.nn.stats", zip, proctype=NW_PROCESSED_FILES.proctype, collection=NW_PROCESSED_FILES.collection, fn=NW_PROCESSED_FILES.fn)
     output: "work/networks/stats.txt"
-    shell: "python builder/tabulate_cfgs.py {input} {output} --enumerate=false --key_lstrip 'work/' --key_rstrip='.txt.nn.stats'"
+    #shell: "python builder/tabulate_cfgs.py {input} {output} --enumerate=false --key_lstrip 'work/' --key_rstrip='.txt.nn.stats'"
+    run:
+        quoted_input = ' '.join('"%s"' % o for o in input)
+        shell("python builder/tabulate_cfgs.py {quoted_input} {output} --enumerate=false --key_lstrip 'work/' --key_rstrip='.txt.nn.stats'")
 
 
 rule INIT_PUBMED_CACHE:
