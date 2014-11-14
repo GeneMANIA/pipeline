@@ -72,10 +72,7 @@ ALL_DESCS = expand("work/attributes/gene-attrib-list/{collection}/{fn}.desc.clea
     expand("work/attributes/attrib-desc-gene-list/{collection}/{fn}.desc.cleaned", \
     zip, collection=ADGL_FNS.collection, fn=ADGL_FNS.fn)
 
-
-
-print("-------------")
-print(ALL_FNS)
+#print(ALL_FNS)
 
 # make sure the file sets are consistent in size, so no
 # .cfg and .desc files are missing
