@@ -54,7 +54,8 @@ def deduper(group_frame):
         group_frame = group_frame.sort(['pubmed_id', 'dataset_key'], axis=0)
 
         if len(group_frame) > len(ENDINGS):
-            raise Exception("too many colliding networks to rename")
+            raise Exception("too many colliding networks with name '%s' to rename (%s)" %
+                            (group_frame['selected_name'].iloc[0], len(group_frame)))
 
         # append the dedup letters 'A', 'B', etc to the name
         group_frame['dedup_suffix'] = [' ' + ending for ending in ENDINGS[:len(group_frame)]]
@@ -86,7 +87,7 @@ def main(inputfile, outputfile):
 
     # also a name based on the file
     network_metadata['name_from_file'] = network_metadata.apply(lambda row:
-                                                                os.path.splitext(os.path.basename(row['dataset_key']))[0],
+                                                                os.path.basename(row['dataset_key']),
                                                                 axis=1)
 
     # choose a name, either the name provided by user,
