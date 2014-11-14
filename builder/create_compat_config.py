@@ -10,7 +10,16 @@ from configobj import ConfigObj
 def main(config, output):
 
     cfg = ConfigObj(config, encoding='utf8')
-    short_id = cfg['short_id']
+
+
+    # if the original config has a short_id, use it, but if
+    # not, synthesize one from the genemania organism id. hopefully
+    # just needed for compatability with the index building program
+    # until its revised, can drop after that. TODO
+    if 'short_id' in cfg:
+        short_id = cfg['short_id']
+    else:
+        short_id = 'GMORG' + str(cfg['gm_organism_id'])
 
     compat_cfg = ConfigObj(encoding='utf8')
 
