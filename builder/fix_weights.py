@@ -4,7 +4,9 @@
 
 3-column input: remove any values in 3rd column that are not numeric or have value <= 0
 
->3 or <2 columns, error
+>3 columns: use first 3 only
+
+<2 columns: error
 """
 
 import argparse
@@ -15,25 +17,25 @@ SEP = '\t'
 
 def main(inputfile, outputfile, logfile):
 
-    indata = pd.read_csv(inputfile, sep=SEP, header=None, na_filter=False)
+    data = pd.read_csv(inputfile, sep=SEP, header=None, na_filter=False)
 
-    
-    if len(indata.columns) > 3:
-        raise("input file %s contains too many columns (%s)" % (inputfile, len(indata.columns)))
+    if len(data.columns) < 2:
+        raise Exception("input file %s contains too few columns (%s)" % (inputfile, len(data.columns)))
 
-    elif len(indata.columns) < 2:
-        raise("input file %s contains too few columns (%s)" % (inputfile, len(indata.columns)))
+    elif len(data.columns) == 2:
+        data[2] = 1  # set weights to 1, making a third column
 
-    elif len(indata.columns) == 2:
-        indata[2] = 1  # set weights to 1, making a third column
+    if len(data.columns) > 3:
+        print("Warning: input file %s contains too many columns (%s), using first 3" % (inputfile, len(data.columns)))
+        data = data.ix[:, :3]
 
     else: 
         # drop non-numeric values in 3rd column
-        indata[2] = indata[2].convert_objects(convert_numeric=True)
-        indata.dropna(inplace=True)
+        data[2] = data[2].convert_objects(convert_numeric=True)
+        data.dropna(inplace=True)
 
     # write output
-    indata.to_csv(outputfile, sep=SEP, header=False, index=False)
+    data.to_csv(outputfile, sep=SEP, header=False, index=False)
 
     # write summary log TODO
 
