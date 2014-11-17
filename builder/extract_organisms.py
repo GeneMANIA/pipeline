@@ -13,8 +13,8 @@ def main(cfg, outputfile):
     df = pd.DataFrame(columns=outfile_header, index=[1]) # prealloc 1 row
 
     df['ID'] = config['gm_organism_id']
-    df['NAME'] = config['common_name']
-    df['DESCRIPTION'] = config['short_name']
+    df['NAME'] = config['short_name']
+    df['DESCRIPTION'] = config['common_name']
     df['ALIAS'] = config['name']
     df['ONTOLOGY_ID'] = config['gm_organism_id'] # using organism id here as well, since only 1 enrichment ontology per organism
     df['TAXONOMY_ID'] = config['ncbi_taxonomy_id']
