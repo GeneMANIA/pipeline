@@ -46,6 +46,7 @@ NW_PROCESSED_FILES = glob_wildcards("data/networks/{proctype}/{collection}/{fn}.
 rule GDB_INTERACTIONS:
     input: "work/flags/generic_db.interaction_data.flag"
 
+# TODO: should we be using the processed metadata file here to guide the copying?
 rule COPY_INTERACTIONS:
     input: mapfile="work/networks/network_metadata.txt",
         networks=expand("work/networks/{proctype}/{collection}/{fn}.txt.nn", \
@@ -59,7 +60,8 @@ rule COPY_INTERACTIONS:
     #    """
     run:
         quoted_input_networks = ' '.join('"%s"' % o for o in input.networks)
-        shell("""ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1)
-        python builder/rename_data_files.py interactions {input.mapfile} {params.newdir} $ORGANISM_ID {quoted_input_networks} \
-        --key_lstrip='work/' --key_rstrip='.txt.nn' && touch {output}
-        """)
+        shell("""ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1) && \
+              python builder/rename_data_files.py interactions {input.mapfile} {params.newdir} ${{ORGANISM_ID}} \
+              {quoted_input_networks} --key_lstrip='work/' --key_rstrip='.txt.nn' && touch {output}
+              """)
+
