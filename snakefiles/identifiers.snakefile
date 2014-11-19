@@ -13,7 +13,7 @@ for i in range(len(SYMBOL_FILES)):
     for ignore in ignores:
         del(SYMBOL_FILES[i][ignore])
 
-COMBINED_SYMBOL_FILES = expand('data/identifeirs/symbols/{fn}', fn=SYMBOL_FILES.fn) + expand('work/identifiers/symbols/{fn}.triplets', fn=RAW_FILES.fn)
+COMBINED_SYMBOL_FILES = expand('data/identifiers/symbols/{fn}', fn=SYMBOL_FILES.fn) + expand('work/identifiers/symbols/{fn}.triplets', fn=RAW_FILES.fn)
 COMBINED_DESCRIPTION_FILES = expand('data/identifiers/descriptions/{fn}', fn=DESCRIPTION_FILES.fn) + expand('work/identifiers/descriptions/{fn}.desc', fn=RAW_FILES.fn)
 
 
