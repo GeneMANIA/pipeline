@@ -22,7 +22,7 @@ COMBINED_DESCRIPTION_FILES = expand('data/identifiers/descriptions/{fn}', fn=DES
 rule MELT_RAW_IDENTIFIERS:
     input: "data/identifiers/mixed_table/{fn}"
     output: symbols="work/identifiers/symbols/{fn}.triplets", descriptions="work/identifiers/descriptions/{fn}.desc"
-    shell: "python builder/melt_raw_identifiers.py {input} {output.symbols} {output.descriptions}"
+    shell: "python builder/melt_raw_identifiers.py {input} {output.symbols} {output.descriptions} --biotypes protein_coding True"
 
 
 # target rule for symbol scrubbing

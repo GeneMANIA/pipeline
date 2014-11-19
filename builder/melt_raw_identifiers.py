@@ -15,7 +15,7 @@ from identifiers import identifier_merger
 from identifiers import constants
 
 
-def main(inputfile, symbols_outputfile, descriptions_outputfile):
+def main(inputfile, symbols_outputfile, descriptions_outputfile, biotypes=None):
 
     # symbols as id/symbol/source triplets
     db = identifier_merger.IdentifierDB(":memory:")
@@ -25,11 +25,8 @@ def main(inputfile, symbols_outputfile, descriptions_outputfile):
         db.remove_unwanted_sources(constants.RAW_DEFAULT_SOURCES_TO_REMOVE)
         db.standardize_source_names()
 
-        # TODO: do we want to apply biotype filter here?
-        # or is it always done by the script generating
-        # this raw input file?
-
-        #db.biotype_filter()
+        if biotypes:
+            db.biotype_filter(biotypes)
 
         db.export_processed(open(symbols_outputfile, 'w', encoding='UTF8'))
 
@@ -49,6 +46,8 @@ if __name__ == '__main__':
     parser.add_argument('inputfile')
     parser.add_argument('symbols_outputfile')
     parser.add_argument('descriptions_outputfile')
+    parser.add_argument('--biotypes', nargs='*',
+                        help='only load records having one of these biotypes')
 
     args = parser.parse_args()
-    main(args.inputfile, args.symbols_outputfile, args.descriptions_outputfile)
+    main(args.inputfile, args.symbols_outputfile, args.descriptions_outputfile, args.biotypes)
