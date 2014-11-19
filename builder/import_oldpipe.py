@@ -266,8 +266,6 @@ class Importer(object):
 
     def import_attribute_file(self, collection, name, attrib):
 
-        print(collection, name)
-
         # check if presence of the data files
         data_file = attrib['assoc_file']
         desc_file = attrib['desc_file']
