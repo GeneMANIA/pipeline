@@ -44,15 +44,20 @@ def to_series(metadata):
     # article title
     title = str(article['ArticleTitle'])
 
-    # authors ... needs handling for CollectiveName tag?
+    # authors sometimes include a group under a CollectiveName tag.
+    # ignore those and just extract last author names
     authors = article['AuthorList']
 
-    first_author = str(authors[0]['LastName'])
+    last_names = []
+    for author in authors:
+        if 'LastName' in author:
+            last_names.append(str(author['LastName']))
 
-    if len(authors) > 1:
-        last_author = str(authors[-1]['LastName'])
-    else:
-        last_author = ''
+    first_author = last_author = ''
+    if len(last_names) > 0:
+        first_author = last_names[0]
+    if len(last_names) > 1:
+        last_author = last_names[-1]
 
     # journal
     journal = str(article['Journal']['Title'])
