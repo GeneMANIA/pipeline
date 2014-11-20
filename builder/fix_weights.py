@@ -17,7 +17,13 @@ SEP = '\t'
 
 def main(inputfile, outputfile, logfile):
 
-    data = pd.read_csv(inputfile, sep=SEP, header=None, na_filter=False)
+    try:
+        data = pd.read_csv(inputfile, sep=SEP, header=None, na_filter=False)
+    except ValueError as e:
+        # probably the file is empty, create an empty 3 column data frame
+        assert str(e) == 'No columns to parse from file'
+        print('warning, file is empty: ' + inputfile)
+        data = pd.DataFrame(columns=range(3))
 
     if len(data.columns) < 2:
         raise Exception("input file %s contains too few columns (%s)" % (inputfile, len(data.columns)))
