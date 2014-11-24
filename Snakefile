@@ -15,8 +15,14 @@ else:
 ## pipeline rules
 # set a default rule
 
-rule NO_DEFAULT:
-    message: "no default rule"
+rule ALL:
+    message: "build everything"
+    input: "work/flags/all.flag"
+
+# connect the last thing in the pipeline to the all flag
+rule ALL_ENGINE_DATA:
+    input: "work/flags/engine.precombine_networks.flag"
+    output: "work/flags/all.flag"
 
 # generic cleaning rules
 rule CLEAN:
@@ -39,3 +45,4 @@ include: 'snakefiles/attributes.snakefile'
 include: 'snakefiles/network_metadata.snakefile'
 include: 'snakefiles/lucene_index.snakefile'
 include: 'snakefiles/engine_data.snakefile'
+
