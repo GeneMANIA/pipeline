@@ -19,10 +19,11 @@ rule ALL:
     message: "build everything"
     input: "work/flags/all.flag"
 
-# connect the last thing in the pipeline to the all flag
+# connect the last thing currnently in the pipeline to the 'all' flag file
 rule ALL_ENGINE_DATA:
     input: "work/flags/engine.precombine_networks.flag"
     output: "work/flags/all.flag"
+    shell: "touch {output}"
 
 # generic cleaning rules
 rule CLEAN:
