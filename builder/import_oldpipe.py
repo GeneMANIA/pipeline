@@ -252,17 +252,17 @@ class Importer(object):
         # from master-config
         attrib_metadata = self.master_cfg['Attributes']
         for name in attrib_metadata:
-            attribs = attrib_metadata[name]
+            attrib = attrib_metadata[name]
 
             # file path fixes
-            data_file = attribs['assoc_file']
-            desc_file = attribs['desc_file']
+            data_file = attrib['assoc_file']
+            desc_file = attrib['desc_file']
 
             data_file = data_file.replace('MAGIC_ORG_IDENTIFIER', self.short_id)
             desc_file = desc_file.replace('MAGIC_ORG_IDENTIFIER', self.short_id)
 
-            attribs['assoc_file'] = data_file
-            attribs['desc_file'] = desc_file
+            attrib['assoc_file'] = data_file
+            attrib['desc_file'] = desc_file
 
             # import
             self.import_attribute_file('manual', name, attrib)
@@ -320,7 +320,13 @@ class Importer(object):
         new_desc_name = os.path.join(new_path, basename + '.desc')
         new_cfg_name = os.path.join(new_path, basename + '.cfg')
 
-        # write the config, and copy the data
+        # write the config, and copy the data. for safety in case
+        # some other data file has the same name during import, raise
+        # an error if destination already exists
+        assert not os.path.exists(new_cfg_name)
+        assert not os.path.exists(new_data_name)
+        assert not os.path.exists(new_desc_name)
+
         cfg.filename = new_cfg_name
         cfg.write()
         shutil.copyfile(data_file, new_data_name)
