@@ -7,20 +7,20 @@ rule GENERIC_DB:
 # may revise in future. just create empty files for now
 # leaving support in rest of the system
 
-rule GDB_TAGS:
+rule GENERIC_DB_TAGS:
     output: "result/generic_db/TAGS.txt"
     shell: "touch {output}"
 
-rule GDB_NETWORK_TAG_ASSOC:
+rule GENERIC_DB_NETWORK_TAG_ASSOC:
     output: "result/generic_db/NETWORK_TAG_ASSOC.txt"
     shell: "touch {output}"
 
-rule GDB_SCHEMA:
+rule GENERIC_DB_SCHEMA:
     input: "config/SCHEMA.txt"
     output: "result/generic_db/SCHEMA.txt"
     shell: "cp {input} {output}"
 
-rule GDB_STATISTICS:
+rule GENERIC_DB_STATISTICS:
     output: "result/generic_db/STATISTICS.txt"
     shell: "touch {output}"
 
@@ -29,7 +29,7 @@ rule CLEAN_GENERIC_DB:
         rm -f work/flags/generic_db.*.flag
         """
 
-rule GDB_ORGANISMS:
+rule GENERIC_DB_ORGANISMS:
     input: "data/organism.cfg"
     output: "result/generic_db/ORGANISMS.txt"
     shell: "python builder/extract_organisms.py {input} {output}"
@@ -43,7 +43,7 @@ GO_BRANCHES = ['BP', 'MF', 'CC']
 NW_PROCESSED_FILES = glob_wildcards("data/networks/{proctype}/{collection}/{fn}.txt")
 
 # dynamic() needs more investigation, use flag file
-rule GDB_INTERACTIONS:
+rule GENERIC_DB_INTERACTIONS:
     input: "work/flags/generic_db.interaction_data.flag"
 
 # TODO: should we be using the processed metadata file here to guide the copying?
