@@ -233,6 +233,9 @@ class Importer(object):
         for name in attrib_metadata:
             attrib = attrib_metadata[name]
 
+            if attrib['org_code'] != self.short_id:
+                continue  # ignore, different organism
+
             # file path fixes
             data_file = attrib['assoc_file']
             desc_file = attrib['desc_file']
