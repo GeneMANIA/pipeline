@@ -11,7 +11,7 @@ rule LUCENE_CFG:
     shell: "python builder/create_compat_config.py {input} {output}"
 
 rule BUILD_LUCENE_INDEX:
-    input: gdb=GENERIC_DB_FILES, cfg="work/lucene.cfg", colours="config/colours.txt"
+    input: gdb=GENERIC_DB_METADATA_FILES, cfg="work/lucene.cfg", colours="config/colours.txt"
     params: base_dir="result", lucene_index_dir="result/lucene_index", profile="none"
     output: "work/flags/lucene.flag"
     shell: "java -cp {JAR_FILE} org.genemania.mediator.lucene.exporter.Generic2LuceneExporter \
