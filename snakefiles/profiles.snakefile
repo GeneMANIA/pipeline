@@ -4,9 +4,11 @@ FNS = glob_wildcards("data/networks/profile/{collection}/{fn}.txt")
 
 
 rule PROFILES:
+    message: "target rule for interaction networks created from profile data"
     input: expand("work/networks/profile/{collection}/{fn}.txt.nn", zip, collection=FNS.collection, fn=FNS.fn)
 
 rule PROCESS_PROFILES_P2N:
+    message: "convert profiles to networks"
     input: data="data/networks/profile/{collection}/{fn}.txt", mapping="work/identifiers/symbols.txt"
     output: "work/networks/profile/{collection}/{fn}.txt.p2n"
     log: "work/networks/profile/{collection}/{fn}.txt.p2n.log"
@@ -17,6 +19,7 @@ rule PROCESS_PROFILES_P2N:
         -keepAllTies -limitTies'
 
 rule PROCESS_PROFILES_NN:
+    message: "network normalization"
     input: data="work/networks/profile/{collection}/{fn}.txt.p2n", mapping="work/identifiers/symbols.txt"
     output: "work/networks/profile/{collection}/{fn}.txt.nn"
     log: "work/networks/profile/{collection}/{fn}.txt.nn.log"

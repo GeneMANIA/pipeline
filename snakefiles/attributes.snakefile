@@ -1,6 +1,5 @@
 
 '''
-
 major targets:
 
   ATTRIBUTES: processes attribute metadata into generic_db (well not yet)
@@ -41,7 +40,7 @@ and proceeds to the following intermediate files:
 
 ## processing based on input data files:
 
-# naming pnemonic, G=genes, A=attributes, D=descriptions, L=list
+# naming mnemonic, G=genes, A=attributes, D=descriptions, L=list
 GAL_FNS = my_glob_wildcards("data/attributes/gene-attrib-list/{collection}/{fn}.txt")
 AGL_FNS = my_glob_wildcards("data/attributes/attrib-gene-list/{collection}/{fn}.txt")
 ADGL_FNS = my_glob_wildcards("data/attributes/attrib-desc-gene-list/{collection}/{fn}.txt")
@@ -86,29 +85,29 @@ rule ATTRIBUTES:
 # for common processing
 
 rule MELT_ATTRIBUTES:
-    message: "convert ragged input files into tall thin tables"
+    message: "convert ragged gene-attrib input files into tall thin tables"
     input: "data/attributes/gene-attrib-list/{collection}/{fn}.txt"
     output: "work/attributes/gene-attrib-list/{collection}/{fn}.txt.melted"
     shell: "python builder/ragged_melter.py {input} {output}"
 
 rule MELT_ATTRIBUTES2:
-    message: "convert ragged input files into tall thin tables"
+    message: "convert ragged attrib-gene input files into tall thin tables"
     input: "data/attributes/attrib-gene-list/{collection}/{fn}.txt"
     output: "work/attributes/attrib-gene-list/{collection}/{fn}.txt.melted-transposed"
     shell: "python builder/ragged_melter.py {input} {output}"
 
 rule TRANSPOSE_ATTRIBS:
-    message: "attrib-gene to gene-attrib pairs"
+    message: "convert attrib-gene to gene-attrib pairs"
     input: "work/attributes/attrib-gene-list/{collection}/{fn}.txt.melted-transposed"
     output: "work/attributes/attrib-gene-list/{collection}/{fn}.txt.melted"
     shell: "cut -d '\t' -f 2,1 {input} > {output}"
 
 rule MELT_ATTRIBUTES3:
-    message: "convert ragged input files into tall thin tables"
+    message: "convert gmt-format ragged input files into tall thin tables"
     input: "data/attributes/attrib-desc-gene-list/{collection}/{fn}.txt"
     output: "work/attributes/attrib-desc-gene-list/{collection}/{fn}.txt.melted"
     #shell: "python builder/ragged_melter.py {input} {output}"
-    shell: "false" # because not implemented
+    shell: "false" # because not implemented, issue #12
 
 #
 # common processing for all attributes
@@ -139,11 +138,6 @@ rule MAP_ATTRIBUTES_TO_IDS:
     output: "work/attributes/{proctype}/{collection}/{fn}.txt.mapped"
     shell: "python builder/map_attributes_to_ids.py {input.data} {input.desc} {input.mapping} {output}"
 
-rule UPDATE_ATTRIBUTE_METADATA:
-    input: "data/attributes/{proctype}/{collection}/{fn}.cfg"
-    output: "work/attributes/{proctype}/{collection}/{fn}.cfg.cp"
-    shell: "cp {input} {output}"
-
 # need a better name for the target rule for the network metadata
 rule TABULATE_ATTRIBUTE_METADATA:
     input: "work/attributes/metadata.txt"
@@ -160,7 +154,8 @@ rule APPLY_TABULATION:
 rule ENUMERATE_ATTRIBUTE_METADATA:
     input: "work/attributes/enumeration.txt"
 
-rule APPLY_ENUMERATION:
+rule APPLY_ATTRIBUTE_ENUMERATION:
+    message: "assign internal genemania id's to each attribute group"
     input: ALL_FNS
     output: "work/attributes/enumeration.txt"
     shell: "python builder/enum_files.py {input} {output}"
@@ -169,7 +164,7 @@ rule ATTRIBUTE_DESCRIPTIONS:
     input: ALL_DESCS
 
 rule UPDATE_ATTRIBUTE_DESCRIPTIONS:
-    message: """attributeid, description pairs, for all attribute ids in
+    message: """create attributeid, description pairs, for all attribute ids in
     input after cleaning, with empty descriptions added in if necessary
     """
     input: desc="data/attributes/{proctype}/{collection}/{fn}.desc", \
@@ -179,6 +174,7 @@ rule UPDATE_ATTRIBUTE_DESCRIPTIONS:
 
 # generic db files for attributes
 rule GENERIC_DB_ATTRIBUTE_GROUPS:
+    message: "create generic_db ATTRIBUTE_GROUPS.txt file"
     input: metadata="work/attributes/metadata.txt", cfg="data/organism.cfg"
     output: "result/generic_db/ATTRIBUTE_GROUPS.txt"
     shell: """ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1)
@@ -187,6 +183,7 @@ rule GENERIC_DB_ATTRIBUTE_GROUPS:
 
 # generic db files for attributes
 rule GENERIC_DB_ATTRIBUTES:
+    message: "create generic_db ATTRIBUTES.txt file with name of each attribute in each group"
     input: desc=ALL_DESCS, metadata='work/attributes/metadata.txt', cfg="data/organism.cfg"
     output: "result/generic_db/ATTRIBUTES.txt"
     shell: """ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1)
@@ -202,6 +199,7 @@ rule GENERIC_DB_ATTRIBUTE_DATA:
     input: "work/flags/generic_db.attribute_data.flag"
 
 rule GENERIC_DB_COPY_ATTRIBUTE_DATA:
+    message: "copy attribute data files to generic_db"
     input: mapfile="work/attributes/metadata.txt",  attribs=ALL_FNS
     output: "work/flags/generic_db.attribute_data.flag"
     params: newdir='result/generic_db/ATTRIBUTES'

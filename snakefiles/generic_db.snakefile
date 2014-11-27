@@ -8,19 +8,24 @@ rule GENERIC_DB:
 # leaving support in rest of the system
 
 rule GENERIC_DB_TAGS:
+    message: "create empty generic db file TAGS.txt, network tags no longer supported"
     output: "result/generic_db/TAGS.txt"
     shell: "touch {output}"
 
 rule GENERIC_DB_NETWORK_TAG_ASSOC:
+    message: "create empty generic_db file NETWORK_TAG_ASSOC"
     output: "result/generic_db/NETWORK_TAG_ASSOC.txt"
     shell: "touch {output}"
 
 rule GENERIC_DB_SCHEMA:
+    message: "create generic db file SCHEMA.txt, describing file layouts"
     input: "config/SCHEMA.txt"
     output: "result/generic_db/SCHEMA.txt"
     shell: "cp {input} {output}"
 
+# TODO: add up interaction counts to construct statistics
 rule GENERIC_DB_STATISTICS:
+    message: "create generic db file STATISTICS.txt containing interaction total count, dataset production date"
     output: "result/generic_db/STATISTICS.txt"
     shell: "touch {output}"
 
@@ -30,6 +35,7 @@ rule CLEAN_GENERIC_DB:
         """
 
 rule GENERIC_DB_ORGANISMS:
+    message: "create generic db file ORGANISMS.txt containing list with descriptive names and ids"
     input: "data/organism.cfg"
     output: "result/generic_db/ORGANISMS.txt"
     shell: "python builder/extract_organisms.py {input} {output}"
@@ -44,10 +50,12 @@ NW_PROCESSED_FILES = glob_wildcards("data/networks/{proctype}/{collection}/{fn}.
 
 # dynamic() needs more investigation, use flag file
 rule GENERIC_DB_INTERACTIONS:
+    message: "target rule for interaction data in generic_db format"
     input: "work/flags/generic_db.interaction_data.flag"
 
 # TODO: should we be using the processed metadata file here to guide the copying?
-rule COPY_INTERACTIONS:
+rule GENERIC_DB_COPY_INTERACTIONS:
+    message: "copy network interaction files to generic_db"
     input: mapfile="work/networks/network_metadata.txt",
         networks=expand("work/networks/{proctype}/{collection}/{fn}.txt.nn", \
             zip, proctype=NW_PROCESSED_FILES.proctype, collection=NW_PROCESSED_FILES.collection, fn=NW_PROCESSED_FILES.fn),
