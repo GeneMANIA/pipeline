@@ -41,34 +41,34 @@ and proceeds to the following intermediate files:
 ## processing based on input data files:
 
 # naming mnemonic, G=genes, A=attributes, D=descriptions, L=list
-GAL_FNS = my_glob_wildcards("data/attributes/gene-attrib-list/{collection}/{fn}.txt")
-AGL_FNS = my_glob_wildcards("data/attributes/attrib-gene-list/{collection}/{fn}.txt")
-ADGL_FNS = my_glob_wildcards("data/attributes/attrib-desc-gene-list/{collection}/{fn}.txt")
+GAL_FNS = my_glob_wildcards(DATA+"/attributes/gene-attrib-list/{collection}/{fn}.txt")
+AGL_FNS = my_glob_wildcards(DATA+"/attributes/attrib-gene-list/{collection}/{fn}.txt")
+ADGL_FNS = my_glob_wildcards(DATA+"/attributes/attrib-desc-gene-list/{collection}/{fn}.txt")
 
 ## construct lists of file targets composed from the names in the file scans above
 
 # all data files in their normalized forms
-ALL_FNS = expand("work/attributes/gene-attrib-list/{collection}/{fn}.txt.mapped", \
+ALL_FNS = expand(WORK+"/attributes/gene-attrib-list/{collection}/{fn}.txt.mapped", \
     zip, collection=GAL_FNS.collection, fn=GAL_FNS.fn) + \
-    expand("work/attributes/attrib-gene-list/{collection}/{fn}.txt.mapped", \
+    expand(WORK+"/attributes/attrib-gene-list/{collection}/{fn}.txt.mapped", \
     zip, collection=AGL_FNS.collection, fn=AGL_FNS.fn) + \
-    expand("work/attributes/attrib-desc-gene-list/{collection}/{fn}.txt.mapped", \
+    expand(WORK+"/attributes/attrib-desc-gene-list/{collection}/{fn}.txt.mapped", \
     zip, collection=ADGL_FNS.collection, fn=ADGL_FNS.fn)
 
 # all metadata files
-ALL_CFGS = expand("data/attributes/gene-attrib-list/{collection}/{fn}.cfg", \
+ALL_CFGS = expand(DATA+"/attributes/gene-attrib-list/{collection}/{fn}.cfg", \
     zip, collection=GAL_FNS.collection, fn=GAL_FNS.fn) + \
-    expand("data/attributes/attrib-gene-list/{collection}/{fn}.cfg", \
+    expand(DATA+"/attributes/attrib-gene-list/{collection}/{fn}.cfg", \
     zip, collection=AGL_FNS.collection, fn=AGL_FNS.fn) + \
-    expand("data/attributes/attrib-desc-gene-list/{collection}/{fn}.cfg", \
+    expand(DATA+"/attributes/attrib-desc-gene-list/{collection}/{fn}.cfg", \
     zip, collection=ADGL_FNS.collection, fn=ADGL_FNS.fn)
 
 # all cleaned attribute description files
-ALL_DESCS = expand("work/attributes/gene-attrib-list/{collection}/{fn}.desc.cleaned", \
+ALL_DESCS = expand(WORK+"/attributes/gene-attrib-list/{collection}/{fn}.desc.cleaned", \
     zip, collection=GAL_FNS.collection, fn=GAL_FNS.fn) + \
-    expand("work/attributes/attrib-gene-list/{collection}/{fn}.desc.cleaned", \
+    expand(WORK+"/attributes/attrib-gene-list/{collection}/{fn}.desc.cleaned", \
     zip, collection=AGL_FNS.collection, fn=AGL_FNS.fn) + \
-    expand("work/attributes/attrib-desc-gene-list/{collection}/{fn}.desc.cleaned", \
+    expand(WORK+"/attributes/attrib-desc-gene-list/{collection}/{fn}.desc.cleaned", \
     zip, collection=ADGL_FNS.collection, fn=ADGL_FNS.fn)
 
 #print(ALL_FNS)
@@ -86,26 +86,26 @@ rule ATTRIBUTES:
 
 rule MELT_ATTRIBUTES:
     message: "convert ragged gene-attrib input files into tall thin tables"
-    input: "data/attributes/gene-attrib-list/{collection}/{fn}.txt"
-    output: "work/attributes/gene-attrib-list/{collection}/{fn}.txt.melted"
+    input: DATA+"/attributes/gene-attrib-list/{collection}/{fn}.txt"
+    output: WORK+"/attributes/gene-attrib-list/{collection}/{fn}.txt.melted"
     shell: "python builder/ragged_melter.py {input} {output}"
 
 rule MELT_ATTRIBUTES2:
     message: "convert ragged attrib-gene input files into tall thin tables"
-    input: "data/attributes/attrib-gene-list/{collection}/{fn}.txt"
-    output: "work/attributes/attrib-gene-list/{collection}/{fn}.txt.melted-transposed"
+    input: DATA+"/attributes/attrib-gene-list/{collection}/{fn}.txt"
+    output: WORK+"/attributes/attrib-gene-list/{collection}/{fn}.txt.melted-transposed"
     shell: "python builder/ragged_melter.py {input} {output}"
 
 rule TRANSPOSE_ATTRIBS:
     message: "convert attrib-gene to gene-attrib pairs"
-    input: "work/attributes/attrib-gene-list/{collection}/{fn}.txt.melted-transposed"
-    output: "work/attributes/attrib-gene-list/{collection}/{fn}.txt.melted"
+    input: WORK+"/attributes/attrib-gene-list/{collection}/{fn}.txt.melted-transposed"
+    output: WORK+"/attributes/attrib-gene-list/{collection}/{fn}.txt.melted"
     shell: "cut -d '\t' -f 2,1 {input} > {output}"
 
 rule MELT_ATTRIBUTES3:
     message: "convert gmt-format ragged input files into tall thin tables"
-    input: "data/attributes/attrib-desc-gene-list/{collection}/{fn}.txt"
-    output: "work/attributes/attrib-desc-gene-list/{collection}/{fn}.txt.melted"
+    input: DATA+"/attributes/attrib-desc-gene-list/{collection}/{fn}.txt"
+    output: WORK+"/attributes/attrib-desc-gene-list/{collection}/{fn}.txt.melted"
     #shell: "python builder/ragged_melter.py {input} {output}"
     shell: "false" # because not implemented, issue #12
 
@@ -121,43 +121,43 @@ rule MELT_ATTRIBUTES3:
 #
 rule PROCESS_ATTRIBUTES:
     message: "remove unknown gene symbols"
-    input: data="work/attributes/{proctype}/{collection}/{fn}.txt.melted", mapping="work/identifiers/symbols.txt"
-    output: "work/attributes/{proctype}/{collection}/{fn}.txt.scrubbed"
+    input: data=WORK+"/attributes/{proctype}/{collection}/{fn}.txt.melted", mapping=WORK+"/identifiers/symbols.txt"
+    output: WORK+"/attributes/{proctype}/{collection}/{fn}.txt.scrubbed"
     shell: "python builder/scrubber.py {input.data} {input.mapping} {output}"
 
 rule DEDUP_ATTRIBUTES:
     message: "remove duplicate attributes"
-    input: data="work/attributes/{proctype}/{collection}/{fn}.txt.scrubbed", mapping="work/identifiers/symbols.txt"
-    output: "work/attributes/{proctype}/{collection}/{fn}.txt.clean"
+    input: data=WORK+"/attributes/{proctype}/{collection}/{fn}.txt.scrubbed", mapping=WORK+"/identifiers/symbols.txt"
+    output: WORK+"/attributes/{proctype}/{collection}/{fn}.txt.clean"
     shell: "python builder/dedup.py {input.data} {input.mapping} {output}"
 
 rule MAP_ATTRIBUTES_TO_IDS:
     message: "convert gene and attribute symbols to internal genemania ids"
-    input: data="work/attributes/{proctype}/{collection}/{fn}.txt.clean", mapping="work/identifiers/symbols.txt",
-        desc="work/attributes/{proctype}/{collection}/{fn}.desc.cleaned"
-    output: "work/attributes/{proctype}/{collection}/{fn}.txt.mapped"
+    input: data=WORK+"/attributes/{proctype}/{collection}/{fn}.txt.clean", mapping=WORK+"/identifiers/symbols.txt",
+        desc=WORK+"/attributes/{proctype}/{collection}/{fn}.desc.cleaned"
+    output: WORK+"/attributes/{proctype}/{collection}/{fn}.txt.mapped"
     shell: "python builder/map_attributes_to_ids.py {input.data} {input.desc} {input.mapping} {output}"
 
 # need a better name for the target rule for the network metadata
 rule TABULATED_ATTRIBUTE_METADATA:
-    input: "work/attributes/metadata.txt"
+    input: WORK+"/attributes/metadata.txt"
 
 rule TABULATE_ATTRIBUTE_METADATA:
     input: ALL_CFGS
-    output: "work/attributes/metadata.txt"
-    #shell: "python builder/tabulate_cfgs.py {input} {output} --key_lstrip='data/' --key_rstrip='.cfg'"
+    output: WORK+"/attributes/metadata.txt"
+    #shell: "python builder/tabulate_cfgs.py {input} {output} --key_lstrip='{DATA}/' --key_rstrip='.cfg'"
     run:
         quoted_input = ' '.join('"%s"' % o for o in input)
-        shell("python builder/tabulate_cfgs.py {quoted_input} {output} --key_lstrip='data/' --key_rstrip='.cfg'")
+        shell("python builder/tabulate_cfgs.py {quoted_input} {output} --key_lstrip='{DATA}/' --key_rstrip='.cfg'")
 
 # enumerate, needs name. not needed anymore if tabulation good enough?
 rule ENUMERATE_ATTRIBUTE_METADATA:
-    input: "work/attributes/enumeration.txt"
+    input: WORK+"/attributes/enumeration.txt"
 
 rule APPLY_ATTRIBUTE_ENUMERATION:
     message: "assign internal genemania id's to each attribute group"
     input: ALL_FNS
-    output: "work/attributes/enumeration.txt"
+    output: WORK+"/attributes/enumeration.txt"
     shell: "python builder/enum_files.py {input} {output}"
 
 rule ATTRIBUTE_DESCRIPTIONS:
@@ -167,16 +167,16 @@ rule UPDATE_ATTRIBUTE_DESCRIPTIONS:
     message: """create attributeid, description pairs, for all attribute ids in
     input after cleaning, with empty descriptions added in if necessary
     """
-    input: desc="data/attributes/{proctype}/{collection}/{fn}.desc", \
-        data="work/attributes/{proctype}/{collection}/{fn}.txt.scrubbed"
-    output: "work/attributes/{proctype}/{collection}/{fn}.desc.cleaned"
+    input: desc=DATA+"/attributes/{proctype}/{collection}/{fn}.desc", \
+        data=WORK+"/attributes/{proctype}/{collection}/{fn}.txt.scrubbed"
+    output: WORK+"/attributes/{proctype}/{collection}/{fn}.desc.cleaned"
     shell: "python builder/update_attribute_descriptions.py {input.data} {input.desc} {output}"
 
 # generic db files for attributes
 rule GENERIC_DB_ATTRIBUTE_GROUPS:
     message: "create generic_db ATTRIBUTE_GROUPS.txt file"
-    input: metadata="work/attributes/metadata.txt", cfg="data/organism.cfg"
-    output: "result/generic_db/ATTRIBUTE_GROUPS.txt"
+    input: metadata=WORK+"/attributes/metadata.txt", cfg=DATA+"/organism.cfg"
+    output: RESULT+"/generic_db/ATTRIBUTE_GROUPS.txt"
     shell: """ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1)
         python builder/extract_attributes.py attribute_groups $ORGANISM_ID {output} {input.metadata}
         """
@@ -184,11 +184,11 @@ rule GENERIC_DB_ATTRIBUTE_GROUPS:
 # generic db files for attributes
 rule GENERIC_DB_ATTRIBUTES:
     message: "create generic_db ATTRIBUTES.txt file with name of each attribute in each group"
-    input: desc=ALL_DESCS, metadata='work/attributes/metadata.txt', cfg="data/organism.cfg"
-    output: "result/generic_db/ATTRIBUTES.txt"
+    input: desc=ALL_DESCS, metadata=WORK+'/attributes/metadata.txt', cfg=DATA+"/organism.cfg"
+    output: RESULT+"/generic_db/ATTRIBUTES.txt"
     shell: """ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1)
     python builder/extract_attributes.py attributes $ORGANISM_ID {output} {input.metadata} {input.desc} \
-        --key_lstrip='work/' --key_rstrip='.desc.cleaned'
+        --key_lstrip='{WORK}/' --key_rstrip='.desc.cleaned'
     """
 
 # generic db attribute data files for engine cache
@@ -196,21 +196,21 @@ rule GENERIC_DB_ATTRIBUTES:
 # dynamic() mechanism giving problems ... use flag file
 
 rule GENERIC_DB_ATTRIBUTE_DATA:
-    input: "work/flags/generic_db.attribute_data.flag"
+    input: WORK+"/flags/generic_db.attribute_data.flag"
 
 rule GENERIC_DB_COPY_ATTRIBUTE_DATA:
     message: "copy attribute data files to generic_db"
-    input: mapfile="work/attributes/metadata.txt",  attribs=ALL_FNS
-    output: "work/flags/generic_db.attribute_data.flag"
-    params: newdir='result/generic_db/ATTRIBUTES'
+    input: mapfile=WORK+"/attributes/metadata.txt",  attribs=ALL_FNS
+    output: WORK+"/flags/generic_db.attribute_data.flag"
+    params: newdir=RESULT+'/generic_db/ATTRIBUTES'
     #shell: "python builder/rename_data_files.py attribs {input.mapfile} {params.newdir} {input.attribs} \
-    #    --key_lstrip='work/' --key_rstrip='.txt.mapped' && touch {output}"
+    #    --key_lstrip='{WORK}/' --key_rstrip='.txt.mapped' && touch {output}"
     run:
         quoted_input_attribs = ' '.join('"%s"' % o for o in input.attribs)
         shell("python builder/rename_data_files.py attribs {input.mapfile} {params.newdir} {quoted_input_attribs} " \
-         "--key_lstrip='work/' --key_rstrip='.txt.mapped' && touch {output}")
+         "--key_lstrip='{WORK}/' --key_rstrip='.txt.mapped' && touch {output}")
 
 rule CLEAN_ATTRIBUTES:
     shell: """
-        rm -rf work/attributes
+        rm -rf {WORK}/attributes
     """

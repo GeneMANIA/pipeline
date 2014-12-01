@@ -15,12 +15,12 @@ GENERIC_DB_METADATA_FILES = ["ORGANISMS.txt",
 
 # add directory location to generic db file list
 import os
-GENERIC_DB_METADATA_FILES = [os.path.join("result", "generic_db", filename) for filename in GENERIC_DB_METADATA_FILES]
+GENERIC_DB_METADATA_FILES = [os.path.join(RESULT, "generic_db", filename) for filename in GENERIC_DB_METADATA_FILES]
 
 # flag files for the subdirs in generic db
-GENERIC_DB_FLAG_FILES = ["work/flags/generic_db.interaction_data.flag",
-                         "work/flags/generic_db.attribute_data.flag",
-                         "work/flags/generic_db.function_data.flag"]
+GENERIC_DB_FLAG_FILES = [WORK + "/flags/generic_db.interaction_data.flag",
+                         WORK + "/flags/generic_db.attribute_data.flag",
+                         WORK + "/flags/generic_db.function_data.flag"]
 
 GENERIC_DB_FILES = GENERIC_DB_METADATA_FILES + GENERIC_DB_FLAG_FILES
 
