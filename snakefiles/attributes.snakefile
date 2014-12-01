@@ -139,10 +139,10 @@ rule MAP_ATTRIBUTES_TO_IDS:
     shell: "python builder/map_attributes_to_ids.py {input.data} {input.desc} {input.mapping} {output}"
 
 # need a better name for the target rule for the network metadata
-rule TABULATE_ATTRIBUTE_METADATA:
+rule TABULATED_ATTRIBUTE_METADATA:
     input: "work/attributes/metadata.txt"
 
-rule APPLY_TABULATION:
+rule TABULATE_ATTRIBUTE_METADATA:
     input: ALL_CFGS
     output: "work/attributes/metadata.txt"
     #shell: "python builder/tabulate_cfgs.py {input} {output} --key_lstrip='data/' --key_rstrip='.cfg'"
