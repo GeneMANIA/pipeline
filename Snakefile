@@ -11,12 +11,30 @@ else:
     print("WARNING: genemania jar not found")
     JAR_FILE = "lib/genemania.jar"
 
-#DATA = 'data'
-#WORK = 'work'
-#RESULT = 'result'
-DATA = 'data_worm'
-WORK = 'work_worm'
-RESULT = 'result_worm'
+# we could set a path in the snakefile by:
+#
+#  workdir: "path/to/workdir"
+#
+# to control data location, but it seems to also
+# affect paths to included snakefiles and configs.
+# so try configuring by command line options:
+#
+# e.g. for test run as
+#
+#  snakemake --config test=1
+#
+if 'test' in config and config['test']:
+    DATA = 'test/data'
+    WORK = 'test/work'
+    RESULT = 'test/result'
+else:
+    DATA = 'data'
+    WORK = 'work'
+    RESULT = 'result'
+
+print("DATA:", DATA)
+print("WORK:", WORK)
+print("RESULT:", RESULT)
 
 ## pipeline rules
 # set a default rule
