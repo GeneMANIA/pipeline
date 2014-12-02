@@ -23,9 +23,20 @@ rule APPLY_NETWORK_METADATA_TABULATION:
         quoted_input = ' '.join('"%s"' % o for o in input)
         shell("python builder/tabulate_cfgs.py {quoted_input} {output} --key_lstrip='{DATA}/' --key_rstrip='.cfg'")
 
+rule CREATE_BATCH_EDIT_FILE:
+    message: "create emtpy metadata edit file, if one doesn't already exist"
+    output: DATA+"/metadata_fixes.txt"
+    shell: "touch {output}"
+
+rule APPLY_METADATA_EDITS:
+    message: "apply ad-hoc fixes to network metadata"
+    input: edit_file=DATA+"/metadata_fixes.txt", metadata=WORK+"/networks/network_metadata.txt"
+    output: WORK+"/networks/network_metadata.txt.fixed"
+    shell: "python builder/batch_edit_metadata.py {input.edit_file} {input.metadata} {output} --key_rstrip='.cfg'"
+
 rule SET_MISSING_NETWORK_METADATA:
     message: "set default values where no metadata was provided"
-    input: WORK+"/networks/network_metadata.txt"
+    input: WORK+"/networks/network_metadata.txt.fixed"
     output: WORK+"/networks/network_metadata.txt.defaulted"
     shell: "python builder/set_missing_network_metadata.py {input} {output}"
 
