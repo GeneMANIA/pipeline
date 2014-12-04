@@ -1,19 +1,75 @@
 
+"""
+this script exists because we made a design mistake in the
+organism data structures [TODO explain!]
+"""
+
 import os, shutil, glob
 import argparse
 import pandas as pd
 
-# TODO: sort outputs, so easy to diff and reprodicble
+# TODO: sort outputs, so easy to diff and reproducible
 
 
-def schema2dict(db):
+class GenericDbIO(object):
+    def __init__(self, schema_file):
+        self.schema = schema2dict(schema_file)
+
+    def load_table_file(self, filename, cols):
+        '''
+        helper to load table with column names from schema file
+
+        return pandas dataframe
+        '''
+
+
+        df = pd.read_csv(filename, sep='\t',
+                         na_filter=False, header=None,
+                         names=cols)
+        return df
+
+    def load_table(self, location, name):
+        return load_table(os.path.join(location, name + '.txt'),
+                          self.schema[name])
+
+    def store_table_file(self, df, filename):
+        df.to_csv(filename, sep='\t',
+                  header=False, index=False)
+
+    def store_table(self, df, location, name):
+        self.store_table_file(df, os.path.join(location, name+'.txt'))
+
+    def create_empty_table(self, name):
+        return pd.DataFrame(columns=self.schema[name])
+
+    def list_tables(self):
+        return self.schema.keys()
+
+
+def schema2dict(schema_file):
     # little dictionary of columns from the schema file
-    schema = open(db + '/SCHEMA.txt').read().splitlines()
+    schema = open(schema_file).read().splitlines()
     schema = [line.split('\t') for line in schema]
     schema = dict((line[0], line[1:]) for line in schema)
 
     return schema
 
+# TODO: remove after refactoring
+def my_schema2dict(db):
+    return schema2dict(db + '/SCHEMA.txt')
+
+def load_table(filename, schema):
+    '''
+    helper to load table with column names from schema file
+
+    return pandas dataframe
+    '''
+
+
+    df = pd.read_csv(filename, sep='\t',
+                     na_filter=False, header=None,
+                     names=schema[filename])
+    return df
 
 def my_load_table(dirname, filename, schema):
     '''
@@ -57,7 +113,7 @@ def mergeone(newdb, olddb, mergeddb):
     nwgroups_old = load_table(olddb, 'NETWORK_GROUPS')
     nwgroups_new = load_table(newdb, 'NETWORK_GROUPS')
 
-    max_nwg_id = max(nwgroups_old['ID'])
+    max_nwg_id = max(nwgroups_old['ID'], default=0)
     nwgroups_new['ID'] += max_nwg_id
     nwgroups_merged = pd.concat([nwgroups_old, nwgroups_new], ignore_index=True)
     # make sure no collisions
@@ -67,7 +123,7 @@ def mergeone(newdb, olddb, mergeddb):
     networks_old = load_table(olddb, 'NETWORKS')
     networks_new = load_table(newdb, 'NETWORKS')
 
-    n = max(networks_old['ID'])
+    n = max(networks_old['ID'], default=0)
 
     # there may be gaps in the numbering,  maybe networks that didn't
     # make it through extract because they were empty?
@@ -76,8 +132,6 @@ def mergeone(newdb, olddb, mergeddb):
     nwmap = networks_old[['ID', 'METADATA_ID']].copy()
 
     # don't assume network id and metadata id are the same
-    networks_new[networks_new['ID'] != networks_new['METADATA_ID']].head()
-
     n_md = max(networks_old['METADATA_ID'])
 
     networks_new['ID'] += n
@@ -295,6 +349,214 @@ def mergeone(newdb, olddb, mergeddb):
         link_name = merged_gocats + '/' + os.path.basename(filename)
         rel = os.path.relpath(filename, merged_gocats)
         os.symlink(rel, link_name)
+
+class merger(object):
+
+    def __init__(self, schema_file):
+        self.gio = GenericDbIO(schema_file)
+
+        # initialize empty table dataframes
+        self.merged = {}
+        for table in self.gio.list_tables():
+            self.merged[table] = self.gio.create_empty_table(table)
+
+    def append_table(self, name, df):
+        """helper to append the given dataframe
+        to the merged version we are accumulating
+        """
+
+        self.merged[name] = pd.concat([self.merged[name], df], ignore_index=True)
+
+    def merge_db(self, location):
+        org_id = self.merge_organisms(location)
+
+        network_group_id_inc = self.merge_network_groups(location, id)
+        network_id_inc = self.merge_networks(location, network_group_id_inc)
+        self.merge_network_metadata(location, network_id_inc)
+
+        self.merge_ontologies(location, org_id)
+        self.merge_ontology_categories(location, org_id)
+
+        self.merge_attributes_groups(location)
+        self.merge_attributes(location)
+
+        self.merge_schema(location)
+
+        node_id_inc = self.merge_nodes(location)
+        self.merge_gene_naming_sources(location)
+
+        self.merge_genes(location, node_id_inc)
+        self.merge_gene_data(location, node_id_inc)
+
+        self.merge_statistics(location)
+
+        self.merge_tags(location)
+        self.merge_network_tag_assoc(location)
+
+    def merge(self, input_location_list, merged_location):
+        for location in input_location_list:
+            self.merge_db(location)
+
+        self.write_db(merged_location)
+
+    def write_db(self, location):
+        pass
+
+    def merge_organisms(self, location):
+        organisms = self.gio.load_table(location, 'ORGANISMS')
+
+        # can only merge single organisms dbs into a multi organism one
+        assert len(organisms) == 1
+
+        # if an ontology id is defined, we require for simplicity
+        # that it's id is the same as the organism id TODO fix the
+        # missing value case, is it NAN, 0, '', or what?
+        assert organisms.loc[0]['ID'] == organisms.loc[0]['ONTOLOGY_ID']
+
+        # determine if we need to assign a new organism id
+        # this is one place where we try to preserve id's instead
+        # of just enumerating new ids, so that we have continuity
+        # of organism ids between releases of a dataset
+        id = max(organisms['ID'])  # assumes only single org as above
+        if id in dict(self.merged['ORGANISMS']['ID']):
+            id = max(self.merged['ORGANISMS']['ID'])
+            organisms['ID'] = id
+
+        self.append_table('ORGANISMS', organisms)
+        return id
+
+    def merge_network_groups(self, location):
+        network_groups = self.gio.load_table(location, 'NETWORK_GROUPS')
+
+        max_id = max(self.merged['NETWORK_GROUPS']['ID'])
+        network_groups['ID'] += max_id
+
+        self.append_table('NETWORK_GROUPS', network_groups)
+        return max_id
+
+    def merge_networks(self, location, network_group_inc):
+
+        networks = self.gio.load_table(location, 'NETWORKS')
+
+        # network ids and network metadata ids are 1-1,
+        # for simplicity require they've been constructed with the same ids
+        # (but check to be sure)
+        assert (networks['ID'] == networks['METADATA_ID']).all()
+
+        # map ids by incrementing into empty id space
+        n = max(self.merge['NETWORKS']['ID'], default=0)
+
+        networks['ID'] += n
+        networks['METADATA_ID'] += n
+        networks['GROUP_ID'] += network_group_inc
+
+        self.append_table('NETWORKS', networks)
+        return n
+
+
+    def merge_network_metadata(self, location, network_inc):
+
+        network_metadata = self.gio.load_table(location, 'NETWORK_METADATA')
+
+        # use the same increment as networks, since we are
+        # assuming network_id == network_metadata_id
+        network_metadata['ID'] += network_inc
+
+        self.append_table('NETWORK_METADATA', network_metadata)
+
+    def merge_ontologies(self, location, org_id):
+
+        ontologies = self.gio.load_table(location, 'ONTOLOGIES')
+
+        # for simplicity we require a single set of enrichment annotations
+        # is defined, and that it is given the same id as the organism id
+        # no ontologies is ok too
+
+        if len(ontologies) == 0:
+            return 0
+
+        assert len(ontologies) == 1
+        assert ontologies.loc[0]['ID'] == org_id
+
+        self.append_table('ONTOLOGIES', ontologies)
+
+    def merge_ontology_categories(self, location, org_id):
+
+        ontology_categories = self.gio.load_table('ONTOLOGY_CATEGORIES')
+
+        n = max(self.merged['ONTOLOGY_CATEGORIES']['ID'], default=0)
+        ontology_categories['ID'] += n
+
+        # set ontology id to org id, which we are requiring to be the
+        # same for simplicity
+        ontology_categories['ONTOLOGY_ID'] = org_id
+
+        self.append_table('ONTOLOGY_CATEGORIES', ontology_categories)
+
+    def merge_attribute_groups(self, location):
+        pass #TODO
+
+    def merge_attributes(self, location):
+        pass #TODO
+
+    def merge_schema(self, location):
+        pass #TODO, maybe should just load the original schema, and assert the new one matches?
+
+    def merge_nodes(self, location):
+
+        nodes = self.gio.load_table(location, 'NODES')
+
+        # for simplicity we require gene_data_id (confusing name) has consistent
+        # ids with node id, since they are 1-1
+        assert (nodes['ID'] == nodes['GENE_DATA_ID']).all()
+
+        # update ids
+        n = max(self.merged['NODES']['ID'])
+        nodes['ID'] += n
+        nodes['GENE_DATA_ID'] += n
+
+        self.append_table('NODES', nodes)
+
+        return n
+
+    def merge_gene_naming_sources(self, location):
+        pass #TODO this one could be tricky, since these are global and not per organism, unless duplicates are allowed
+
+    def merge_genes(self, location, node_id_inc):
+
+        genes = self.gio.load_table(location, 'GENES')
+
+        n = max(self.merged['GENES']['ID'], default=0)
+
+        genes['ID'] += n
+        genes['NODE_ID'] += node_id_inc
+
+        self.append_table('GENES', genes)
+
+    def merge_gene_data(self, location, node_id_inc):
+
+        gene_data = self.gio.load_table(location)
+
+        # since we are requiring node_id == gene_data_id
+        gene_data['ID'] += node_id_inc
+
+        self.append_table('GENE_DATA', gene_data)
+
+    def merge_statistics(self, location):
+        pass # TODO: maybe initialize the date in gio, update counts here
+
+    def merge_tags(self, location):
+        # no longer supported
+
+        tags = self.gio.load_table(location, 'TAGS')
+        assert len(tags) == 0
+
+    def merge_network_tag_assoc(self, location):
+        # no longer supported
+
+        network_tag_assoc = self.gio.load_table(location, 'NETWORK_TAG_ASSOC')
+        assert len(network_tag_assoc) == 0
+
 
 def main(newdb, olddbs_list):
     pass
