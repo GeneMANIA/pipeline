@@ -29,14 +29,21 @@ class GenericDbIO(object):
         return df
 
     def load_table(self, location, name):
-        return load_table(os.path.join(location, name + '.txt'),
+        return self.load_table_file(os.path.join(location, name + '.txt'),
                           self.schema[name])
 
     def store_table_file(self, df, filename):
-        df.to_csv(filename, sep='\t',
+        # we don't have any floats, all the numeric vals are ints
+        # convert on write via float_foramt in case loading or
+        # re-indexing math gave us floats
+        df.to_csv(filename, sep='\t',  float_format='%.f',
                   header=False, index=False)
 
     def store_table(self, df, location, name):
+
+        if not os.path.exists(location):
+            os.makedirs(location)
+
         self.store_table_file(df, os.path.join(location, name+'.txt'))
 
     def create_empty_table(self, name):
@@ -350,7 +357,7 @@ def mergeone(newdb, olddb, mergeddb):
         rel = os.path.relpath(filename, merged_gocats)
         os.symlink(rel, link_name)
 
-class merger(object):
+class Merger(object):
 
     def __init__(self, schema_file):
         self.gio = GenericDbIO(schema_file)
@@ -377,7 +384,7 @@ class merger(object):
         self.merge_ontologies(location, org_id)
         self.merge_ontology_categories(location, org_id)
 
-        self.merge_attributes_groups(location)
+        self.merge_attribute_groups(location)
         self.merge_attributes(location)
 
         self.merge_schema(location)
@@ -400,7 +407,8 @@ class merger(object):
         self.write_db(merged_location)
 
     def write_db(self, location):
-        pass
+        for table in self.gio.list_tables():
+            self.gio.store_table(self.merged[table], location, table)
 
     def merge_organisms(self, location):
         organisms = self.gio.load_table(location, 'ORGANISMS')
@@ -411,7 +419,8 @@ class merger(object):
         # if an ontology id is defined, we require for simplicity
         # that it's id is the same as the organism id TODO fix the
         # missing value case, is it NAN, 0, '', or what?
-        assert organisms.loc[0]['ID'] == organisms.loc[0]['ONTOLOGY_ID']
+        assert organisms.loc[0]['ID'] == organisms.loc[0]['ONTOLOGY_ID'], \
+            "organism id must be same as ontology id"
 
         # determine if we need to assign a new organism id
         # this is one place where we try to preserve id's instead
@@ -425,11 +434,12 @@ class merger(object):
         self.append_table('ORGANISMS', organisms)
         return id
 
-    def merge_network_groups(self, location):
+    def merge_network_groups(self, location, org_id):
         network_groups = self.gio.load_table(location, 'NETWORK_GROUPS')
 
-        max_id = max(self.merged['NETWORK_GROUPS']['ID'])
+        max_id = max(self.merged['NETWORK_GROUPS']['ID'], default=0)
         network_groups['ID'] += max_id
+        network_groups['ORGANISM_ID'] = org_id
 
         self.append_table('NETWORK_GROUPS', network_groups)
         return max_id
@@ -444,7 +454,7 @@ class merger(object):
         assert (networks['ID'] == networks['METADATA_ID']).all()
 
         # map ids by incrementing into empty id space
-        n = max(self.merge['NETWORKS']['ID'], default=0)
+        n = max(self.merged['NETWORKS']['ID'], default=0)
 
         networks['ID'] += n
         networks['METADATA_ID'] += n
@@ -482,7 +492,7 @@ class merger(object):
 
     def merge_ontology_categories(self, location, org_id):
 
-        ontology_categories = self.gio.load_table('ONTOLOGY_CATEGORIES')
+        ontology_categories = self.gio.load_table(location, 'ONTOLOGY_CATEGORIES')
 
         n = max(self.merged['ONTOLOGY_CATEGORIES']['ID'], default=0)
         ontology_categories['ID'] += n
@@ -511,7 +521,7 @@ class merger(object):
         assert (nodes['ID'] == nodes['GENE_DATA_ID']).all()
 
         # update ids
-        n = max(self.merged['NODES']['ID'])
+        n = max(self.merged['NODES']['ID'], default=0)
         nodes['ID'] += n
         nodes['GENE_DATA_ID'] += n
 
@@ -535,7 +545,7 @@ class merger(object):
 
     def merge_gene_data(self, location, node_id_inc):
 
-        gene_data = self.gio.load_table(location)
+        gene_data = self.gio.load_table(location, "GENE_DATA")
 
         # since we are requiring node_id == gene_data_id
         gene_data['ID'] += node_id_inc
@@ -558,9 +568,29 @@ class merger(object):
         assert len(network_tag_assoc) == 0
 
 
-def main(newdb, olddbs_list):
-    pass
+def main(input_dbs, merged_db):
+
+    assert len(input_dbs) > 1, "need more than 1 db to merge"
+
+    print('merging %s into %s' % (', '.join(input_dbs), merged_db))
+
+    # grab a schema file from the first db to merge
+    schema_file = os.path.join(input_dbs[0], "SCHEMA.txt")
+
+    #
+    merger = Merger(schema_file)
+
+    merger.merge(input_dbs, merged_db)
+
 
 if __name__ == '__main__':
-    pass
+
+    parser = argparse.ArgumentParser(description='combine multiple single organism generic_dbs')
+
+    parser.add_argument('merged_db', help='output merged db folder')
+    parser.add_argument('input_dbs', help='list of input db folders to include', nargs='+')
+
+    args = parser.parse_args()
+    main(args.input_dbs, args.merged_db)
+
 
