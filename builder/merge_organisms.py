@@ -390,9 +390,9 @@ class Merger(object):
         self.merge_schema(location)
 
         node_id_inc = self.merge_nodes(location)
-        self.merge_gene_naming_sources(location)
+        naming_source_id_inc = self.merge_gene_naming_sources(location)
 
-        self.merge_genes(location, node_id_inc)
+        self.merge_genes(location, node_id_inc, naming_source_id_inc)
         self.merge_gene_data(location, node_id_inc)
 
         self.merge_statistics(location)
@@ -530,9 +530,21 @@ class Merger(object):
         return n
 
     def merge_gene_naming_sources(self, location):
-        pass #TODO this one could be tricky, since these are global and not per organism, unless duplicates are allowed
+        '''this one could be tricky, since these are global and not per organism
+        we'll ignore merging, and effectively create a set of naming sources
+        for each organism
+        '''
 
-    def merge_genes(self, location, node_id_inc):
+        gene_naming_sources = self.gio.load_table(location, 'GENE_NAMING_SOURCES')
+
+        n = max(self.merged['GENE_NAMING_SOURCES']['ID'], default=0)
+        gene_naming_sources['ID'] += n
+
+        self.append_table('GENE_NAMING_SOURCES', gene_naming_sources)
+
+        return n
+
+    def merge_genes(self, location, node_id_inc, namging_source_id_inc):
 
         genes = self.gio.load_table(location, 'GENES')
 
