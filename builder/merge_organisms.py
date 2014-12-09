@@ -374,7 +374,14 @@ class Merger(object):
 
         self.merged[name] = pd.concat([self.merged[name], df], ignore_index=True)
 
-    def merge_db(self, location):
+    def merge_db(self, location, merged_location=None):
+        """merge metadata tables for generic_db in given location
+        into in-memory tables.
+
+        If merged_location given, the bulk interaction data for the given
+        location is copied.  The merged tables are not written out here however,
+        since they require all dbs to be processed. see write_db() instead.
+        """
         org_id = self.merge_organisms(location)
 
         network_group_id_inc = self.merge_network_groups(location, id)
@@ -400,9 +407,14 @@ class Merger(object):
         self.merge_tags(location)
         self.merge_network_tag_assoc(location)
 
+        if merged_location:
+            self.copy_interaction_data(location, merged_location, org_id, network_id_inc, node_id_inc)
+            self.copy_attribute_data(location, merged_location, attribute_group_id_inc, attribute_id_inc, node_id_inc)
+            self.copy_function_data(location, merged_location)
+
     def merge(self, input_location_list, merged_location):
         for location in input_location_list:
-            self.merge_db(location)
+            self.merge_db(location, merged_location)
 
         self.write_db(merged_location)
 
@@ -609,6 +621,64 @@ class Merger(object):
         network_tag_assoc = self.gio.load_table(location, 'NETWORK_TAG_ASSOC')
         assert len(network_tag_assoc) == 0
 
+    def copy_interaction_data(self, location, merged_location, org_id, network_id_inc, node_id_inc):
+
+        from_dir = os.path.join(location, 'INTERACTIONS')
+        data_files = glob.glob(os.path.join(from_dir, '*'))
+
+        to_dir = os.path.join(merged_location, 'INTERACTIONS')
+        if not os.path.exists(to_dir):
+            os.makedirs(to_dir)
+
+        for filename in data_files:
+            parts = os.path.basename(filename).split('.')
+
+            old_org_id, network_id, ext = parts
+            network_id = int(network_id) + network_id_inc
+            new_filename = os.path.join(to_dir, '%s.%s.%s' % (org_id, network_id, ext))
+
+            network_data = pd.read_csv(filename, sep='\t', header=None, names=['node_a', 'node_b', 'weight'])
+            network_data['node_a'] += node_id_inc
+            network_data['node_b'] += node_id_inc
+
+            network_data.to_csv(new_filename, sep='\t', header=False, index=False)
+
+    def copy_attribute_data(self, location, merged_location, attribute_group_id_inc, attribute_id_inc, node_id_inc):
+
+        from_dir = os.path.join(location, 'ATTRIBUTES')
+        data_files = glob.glob(os.path.join(location, 'ATTRIBUTES', '*'))
+
+        to_dir = os.path.join(merged_location, 'ATTRIBUTES')
+        if not os.path.exists(to_dir):
+            os.makedirs(to_dir)
+
+        for filename in data_files:
+            parts = os.path.basename(filename).split('.')
+            attribute_group_id, ext = parts
+            attribute_group_id = int(attribute_group_id) + attribute_group_id_inc
+
+            new_filename = os.path.join(merged_location, '%s.%s' % (attribute_group_id, ext))
+
+            attribute_data = pd.read_csv(filename, sep='\t', header=None, names=['node', 'attribute'])
+            attribute_data['node'] += node_id_inc
+            attribute_data['attribute'] += attribute_id_inc
+
+            attribute_data.to_csv(new_filename, sep='\t', header=False, index=False)
+
+    def copy_function_data(self, location, merged_location):
+        # TODO: this just copies over the file, review naming conventions and content format
+        # and update
+
+        from_dir = os.path.join(location, 'GO_CATEGORIES')
+        to_dir = os.path.join(merged_location, 'GO_CATEGORIES')
+        if not os.path.exists(to_dir):
+            os.makedirs(to_dir)
+
+        data_files = glob.glob(os.path.join(from_dir, '*'))
+
+        for filename in data_files:
+            new_filename = os.path.join(to_dir, os.path.basename(filename))
+            shutil.copyfile(filename, new_filename)
 
 def main(input_dbs, merged_db):
 
