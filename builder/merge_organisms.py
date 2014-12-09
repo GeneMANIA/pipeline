@@ -4,7 +4,7 @@ this script exists because we made a design mistake in the
 organism data structures [TODO explain!]
 """
 
-import os, shutil, glob
+import os, shutil, glob, datetime
 import argparse
 import pandas as pd
 
@@ -581,8 +581,22 @@ class Merger(object):
         self.append_table('GENE_DATA', gene_data)
 
     def merge_statistics(self, location):
-        pass # TODO: maybe initialize the date in gio, update counts here
 
+        statistics = self.gio.load_table(location, "STATISTICS")
+        assert len(statistics) == 1, 'expected exactly 1 record in statistics table, found %s' % len(statistics)
+
+        merged_statistics = self.merged['STATISTICS']
+
+        if len(merged_statistics) == 0:
+            today = datetime.date.today()
+            date = today.strftime('%Y-%m-%d')
+
+            merged_statistics.append({'ID': 1, 'organisms': 0, 'networks': 0,
+                                      'interactions': 0, 'genes': 0, 'predictions': 0, 'date': date},
+                                     ignore_index=True)
+
+        merged_statistics[['organisms', 'networks', 'interactions', 'genes']] += statistics[['organisms', 'networks',
+                                                                                             'interactions', 'genes']]
     def merge_tags(self, location):
         # no longer supported
 
