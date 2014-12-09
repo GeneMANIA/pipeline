@@ -384,8 +384,8 @@ class Merger(object):
         self.merge_ontologies(location, org_id)
         self.merge_ontology_categories(location, org_id)
 
-        self.merge_attribute_groups(location)
-        self.merge_attributes(location)
+        attribute_group_id_inc = self.merge_attribute_groups(location)
+        attribute_id_inc = self.merge_attributes(location, attribute_group_id_inc)
 
         self.merge_schema(location)
 
@@ -504,13 +504,29 @@ class Merger(object):
         self.append_table('ONTOLOGY_CATEGORIES', ontology_categories)
 
     def merge_attribute_groups(self, location):
-        pass #TODO
 
-    def merge_attributes(self, location):
-        pass #TODO
+        attribute_groups = self.gio.load_table(location, 'ATTRIBUTE_GROUPS')
+
+        n = max(self.merged['ATTRIBUTE_GROUPS']['ID'], default=0)
+        attribute_groups['ID'] += n
+        self.append_table('ATTRIBUTE_GROUPS', attribute_groups)
+
+        return n
+
+    def merge_attributes(self, location, attribute_group_id_inc):
+
+        attributes = self.gio.load_table(location, 'ATTRIBUTES')
+
+        n = max(self.merged['ATTRIBUTES']['ID'], default=0)
+        attributes['ID'] += n
+        attributes['ATTRIBUTE_GROUP_ID'] += attribute_group_id_inc
+        self.append_table('ATTRIBUTES', attributes)
+
+        return n
 
     def merge_schema(self, location):
         pass #TODO, maybe should just load the original schema, and assert the new one matches?
+
 
     def merge_nodes(self, location):
 
