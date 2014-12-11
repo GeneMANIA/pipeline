@@ -125,13 +125,16 @@ def extract_networks(input_file, groups_file, output_file):
 
 
     metadata = pd.read_csv(input_file, sep='\t', na_filter=False, header=0)
-    groups = pd.read_csv(groups_file, sep='\t', na_filter=False, header=None, names=['ID', 'NAME', 'CODE', 'DESCRIPTION', 'ORGANISM_ID'])
+    groups = pd.read_csv(groups_file, sep='\t', na_filter=False, header=None, names=['ID', 'NAME', 'CODE',
+                                                                                     'DESCRIPTION', 'ORGANISM_ID'])
+
+    # exclude any networks with zero interactions
+    metadata = metadata[metadata['num_interactions'] > 0]
 
     # just the columns we need, rename others to avoid collisions when merging
     groups.drop(['CODE', 'DESCRIPTION', 'ORGANISM_ID'], axis=1, inplace=True)
     groups.columns = ['GROUP_ID', 'GROUP_NAME']
 
-    #networks = pd.DataFrame(columns=output_cols)
     networks = metadata[['id', 'selected_name', 'group', 'description', 'default_selected']].copy()
     networks.columns = ['ID', 'NAME', 'GROUP_NAME', 'DESCRIPTION', 'DEFAULT_SELECTED']
 
