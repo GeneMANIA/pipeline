@@ -29,6 +29,3 @@ GENERIC_DB_FILES = GENERIC_DB_METADATA_FILES + GENERIC_DB_FLAG_FILES
 IDENTIFIER_SYMBOLS = "identifiers.txt"
 IDENTIFIER_DESCRIPTIONS = "descriptions.txt"
 
-
-# pull in some util functions
-from builder.snakeutils import glob_datafiles, glob_configfiles, my_glob_wildcards

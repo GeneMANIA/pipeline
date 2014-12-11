@@ -41,9 +41,9 @@ and proceeds to the following intermediate files:
 ## processing based on input data files:
 
 # naming mnemonic, G=genes, A=attributes, D=descriptions, L=list
-GAL_FNS = my_glob_wildcards(DATA+"/attributes/gene-attrib-list/{collection}/{fn}.txt")
-AGL_FNS = my_glob_wildcards(DATA+"/attributes/attrib-gene-list/{collection}/{fn}.txt")
-ADGL_FNS = my_glob_wildcards(DATA+"/attributes/attrib-desc-gene-list/{collection}/{fn}.txt")
+GAL_FNS = glob_wildcards(DATA+"/attributes/gene-attrib-list/{collection}/{fn}.txt")
+AGL_FNS = glob_wildcards(DATA+"/attributes/attrib-gene-list/{collection}/{fn}.txt")
+ADGL_FNS = glob_wildcards(DATA+"/attributes/attrib-desc-gene-list/{collection}/{fn}.txt")
 
 ## construct lists of file targets composed from the names in the file scans above
 

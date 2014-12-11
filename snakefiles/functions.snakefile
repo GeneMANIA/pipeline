@@ -1,12 +1,8 @@
 
 
 # grab names of files containing functional categories for enrichment analysis
-#FNS, = glob_wildcards(WORK+"/functions/processed/{fn}")
-FNS=[]
-
 ANNOS_FILES = glob_wildcards(DATA+"/functions/{fn}.txt")
 assert len(ANNOS_FILES) == 1 # sorry, only implemented for one file so far
-
 
 rule CLEAN_FUNCTIONS:
     shell: """rm -f {RESULT}/generic_db/ONTOLOGIES.txt

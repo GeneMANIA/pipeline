@@ -1,10 +1,10 @@
 
 
-FNS = glob_wildcards("data/networks/sharedneighbour/{collection}/{fn}.txt")
+SHAREDNEIGHBOUR_FNS = glob_wildcards(DATA + "/networks/sharedneighbour/{collection}/{fn}.txt")
 
 rule SHAREDNEIGHBOUR_NETWORKS:
     message: "target rule for interaction networks created from shared neighbour profile data"
-    input: expand(WORK+"/networks/sharedneighbour/{collection}/{fn}.txt.nn", zip, collection=FNS.collection, fn=FNS.fn)
+    input: expand(WORK+"/networks/sharedneighbour/{collection}/{fn}.txt.nn", zip, collection=SHAREDNEIGHBOUR_FNS.collection, fn=SHAREDNEIGHBOUR_FNS.fn)
 
 rule PROCESS_SHAREDNEIGHBOUR_NETWORKS_P2N:
     message: "convert shared neighbour profiles to networks"
