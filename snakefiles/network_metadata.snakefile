@@ -73,14 +73,14 @@ rule INIT_PUBMED_CACHE:
 rule FETCH_PUBMED_METADATA:
     message: "retrieve publication metadata from pubmed, where available. create new metadata file adding pubmed info"
     input: metadata=WORK+"/networks/network_metadata.txt.defaulted", pubmed_cache=WORK+"/cache/pubmed.txt"
-    output: WORK+"/networks/network_metadata.pubmed_extended"
+    output: WORK+"/networks/network_metadata.txt.pubmed_extended"
     params: pubmed_cache=WORK+"/cache/pubmed.txt", fetchsize="200"
     shell: "python builder/fetch_pubmed_metadata.py {input.metadata} {output} {input.pubmed_cache} --fetchsize={params.fetchsize}"
 
 
 rule GENERATE_NETWORK_NAMES:
     message: "compute network names from publication metadata, if not given explicitly"
-    input: WORK+"/networks/network_metadata.pubmed_extended"
+    input: WORK+"/networks/network_metadata.txt.pubmed_extended"
     output: WORK+"/networks/network_metadata.txt.named"
     shell: "python builder/generate_network_names.py {input} {output}"
 
