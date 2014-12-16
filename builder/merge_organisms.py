@@ -89,7 +89,7 @@ class Merger(object):
         """
         org_id = self.merge_organisms(location)
 
-        network_group_id_inc = self.merge_network_groups(location, id)
+        network_group_id_inc = self.merge_network_groups(location, org_id)
         network_id_inc = self.merge_networks(location, network_group_id_inc)
         self.merge_network_metadata(location, network_id_inc)
 
@@ -143,13 +143,13 @@ class Merger(object):
         # this is one place where we try to preserve id's instead
         # of just enumerating new ids, so that we have continuity
         # of organism ids between releases of a dataset
-        id = max(organisms['ID'])  # assumes only single org as above
-        if id in dict(self.merged['ORGANISMS']['ID']):
-            id = max(self.merged['ORGANISMS']['ID'])
-            organisms['ID'] = id
+        org_id = max(organisms['ID'])  # assumes only single org as above
+        if org_id in dict(self.merged['ORGANISMS']['ID']):
+            org_id = max(self.merged['ORGANISMS']['ID']) + 1
+            organisms['ID'] = org_id
 
         self.append_table('ORGANISMS', organisms)
-        return id
+        return org_id
 
     def merge_network_groups(self, location, org_id):
         network_groups = self.gio.load_table(location, 'NETWORK_GROUPS')
