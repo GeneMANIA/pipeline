@@ -26,8 +26,10 @@ rule GENERIC_DB_SCHEMA:
 # TODO: add up interaction counts to construct statistics
 rule GENERIC_DB_STATISTICS:
     message: "create generic db file STATISTICS.txt containing interaction total count, dataset production date"
+    input: network_metadata=WORK+'/networks/network_metadata.txt.processed', attribute_metadata=WORK+'/attributes/metadata.txt', symbols=WORK+'/identifiers/symbols.txt'
     output: RESULT+"/generic_db/STATISTICS.txt"
-    shell: "touch {output}"
+    #shell: "touch {output}"
+    shell: "python builder/organism_stats.py {input.network_metadata} {input.attribute_metadata} {input.symbols} {output}"
 
 rule CLEAN_GENERIC_DB:
     shell: """rm -rf {RESULT}/generic_db
