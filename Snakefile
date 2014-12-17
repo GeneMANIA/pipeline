@@ -58,16 +58,25 @@ rule VERY_CLEAN:
         rm -rf {RESULT}
         """
 
-# load all the snakefiles
+# load all the snakefiles. when doing merges,
+# want to disconnect rules preceeding generic_db
+# so include those conditionally, depending on
+# argument --config merge=1
+
 include: 'snakefiles/common.snakefile'
-include: 'snakefiles/identifiers.snakefile'
-include: 'snakefiles/generic_db.snakefile'
-include: 'snakefiles/functions.snakefile'
-include: 'snakefiles/direct_networks.snakefile'
-include: 'snakefiles/sharedneighbour_networks.snakefile'
-include: 'snakefiles/profiles.snakefile'
-include: 'snakefiles/attributes.snakefile'
-include: 'snakefiles/network_metadata.snakefile'
+
+if 'merge' in config and config['merge']:
+    include: 'snakefiles/merge.snakefile'
+else:
+    include: 'snakefiles/identifiers.snakefile'
+    include: 'snakefiles/generic_db.snakefile'
+    include: 'snakefiles/functions.snakefile'
+    include: 'snakefiles/direct_networks.snakefile'
+    include: 'snakefiles/sharedneighbour_networks.snakefile'
+    include: 'snakefiles/profiles.snakefile'
+    include: 'snakefiles/attributes.snakefile'
+    include: 'snakefiles/network_metadata.snakefile'
+
 include: 'snakefiles/lucene_index.snakefile'
 include: 'snakefiles/engine_data.snakefile'
 

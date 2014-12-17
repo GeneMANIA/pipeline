@@ -439,8 +439,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='combine multiple single organism generic_dbs')
 
-    parser.add_argument('merged_db', help='output merged db folder')
     parser.add_argument('input_dbs', help='list of input db folders to include', nargs='+')
+    parser.add_argument('merged_db', help='output merged db folder')
 
     args = parser.parse_args()
     main(args.input_dbs, args.merged_db)

@@ -6,7 +6,7 @@ rule LUCENE_INDEX:
     message: "target rule for lucene index files"
     input: WORK+"/flags/lucene.flag"
 
-rule LUCENE_CFG:
+rule LUCENE_CONFIG:
     message: "build a config file in format compatible with generic db lucene indexer"
     input: DATA+"/organism.cfg"
     output: WORK+"/lucene.cfg"
