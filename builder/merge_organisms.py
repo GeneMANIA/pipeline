@@ -18,19 +18,6 @@ class GenericDbIO(object):
     def load_table_file(self, filename, cols):
         '''
         helper to load table with column names from schema file
-
-        return pandas dataframe
-        '''
-
-
-        df = pd.read_csv(filename, sep='\t',
-                         na_filter=False, header=None,
-                         names=cols)
-        return df
-
-    def load_table_file(self, filename, cols):
-        '''
-        helper to load table with column names from schema file
         reads everything as strings so we don't get floats where
         we want ints, except columns named 'ID' or '*_ID' (with
         exceptions, yes its a bit fiddly, ideally the schema would
