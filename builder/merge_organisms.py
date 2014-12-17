@@ -13,6 +13,7 @@ import pandas as pd
 
 class GenericDbIO(object):
     def __init__(self, schema_file):
+        self.schema_file = schema_file
         self.schema = schema2dict(schema_file)
 
     def load_table_file(self, filename, cols):
@@ -62,6 +63,14 @@ class GenericDbIO(object):
 
     def list_tables(self):
         return self.schema.keys()
+
+    def store_schema(self, location):
+
+        if not os.path.exists(location):
+            os.makedirs(location)
+
+        new_schema_file = os.path.join(location, os.path.basename(self.schema_file))
+        shutil.copyfile(self.schema_file, new_schema_file)
 
 
 def schema2dict(schema_file):
@@ -135,8 +144,13 @@ class Merger(object):
         self.write_db(merged_location)
 
     def write_db(self, location):
+
+        # write out the merged db tabls we've built up
         for table in self.gio.list_tables():
             self.gio.store_table(self.merged[table], location, table)
+
+        # copy over schema file
+        self.gio.store_schema(location)
 
     def merge_organisms(self, location):
         organisms = self.gio.load_table(location, 'ORGANISMS')
