@@ -199,7 +199,7 @@ class Merger(object):
 
         # map ids by incrementing into empty id space
         n = max(self.merged['NETWORKS']['ID'], default=0)
-        n = max(n)
+        n = int(n)
 
         networks['ID'] += n
         networks['METADATA_ID'] += n
@@ -240,7 +240,7 @@ class Merger(object):
         ontology_categories = self.gio.load_table(location, 'ONTOLOGY_CATEGORIES')
 
         n = max(self.merged['ONTOLOGY_CATEGORIES']['ID'], default=0)
-        n = max(n)
+        n = int(n)
         ontology_categories['ID'] += n
 
         # set ontology id to org id, which we are requiring to be the
@@ -254,7 +254,7 @@ class Merger(object):
         attribute_groups = self.gio.load_table(location, 'ATTRIBUTE_GROUPS')
 
         n = max(self.merged['ATTRIBUTE_GROUPS']['ID'], default=0)
-        n = max(n)
+        n = int(n)
         attribute_groups['ID'] += n
         self.append_table('ATTRIBUTE_GROUPS', attribute_groups)
 
@@ -265,7 +265,7 @@ class Merger(object):
         attributes = self.gio.load_table(location, 'ATTRIBUTES')
 
         n = max(self.merged['ATTRIBUTES']['ID'], default=0)
-        n = max(n)
+        n = int(n)
         attributes['ID'] += n
         attributes['ATTRIBUTE_GROUP_ID'] += attribute_group_id_inc
         self.append_table('ATTRIBUTES', attributes)
@@ -286,7 +286,7 @@ class Merger(object):
 
         # update ids
         n = max(self.merged['NODES']['ID'], default=0)
-        n = max(n)
+        n = int(n)
         nodes['ID'] += n
         nodes['GENE_DATA_ID'] += n
 
@@ -303,7 +303,7 @@ class Merger(object):
         gene_naming_sources = self.gio.load_table(location, 'GENE_NAMING_SOURCES')
 
         n = max(self.merged['GENE_NAMING_SOURCES']['ID'], default=0)
-        n = max(n)
+        n = int(n)
         gene_naming_sources['ID'] += n
 
         self.append_table('GENE_NAMING_SOURCES', gene_naming_sources)
@@ -315,7 +315,7 @@ class Merger(object):
         genes = self.gio.load_table(location, 'GENES')
 
         n = max(self.merged['GENES']['ID'], default=0)
-        n = max(n)
+        n = int(n)
 
         genes['ID'] += n
         genes['NODE_ID'] += node_id_inc
