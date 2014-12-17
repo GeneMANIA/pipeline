@@ -383,7 +383,7 @@ class Merger(object):
             attribute_group_id, ext = parts
             attribute_group_id = int(attribute_group_id) + attribute_group_id_inc
 
-            new_filename = os.path.join(merged_location, '%s.%s' % (attribute_group_id, ext))
+            new_filename = os.path.join(to_dir, '%s.%s' % (attribute_group_id, ext))
 
             attribute_data = pd.read_csv(filename, sep='\t', header=None, names=['node', 'attribute'])
             attribute_data['node'] += node_id_inc
