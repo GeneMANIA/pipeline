@@ -28,6 +28,30 @@ class GenericDbIO(object):
                          names=cols)
         return df
 
+    def load_table_file(self, filename, cols):
+        '''
+        helper to load table with column names from schema file
+        reads everything as strings so we don't get floats where
+        we want ints, except columns named 'ID' or '*_ID' (with
+        exceptions, yes its a bit fiddly, ideally the schema would
+        include a type. which would make it more sql-ish)
+
+        return pandas dataframe
+        '''
+
+        df = pd.read_csv(filename, sep='\t', dtype=str,
+                         na_filter=False, header=None,
+                         names=cols)
+
+        # not all columns ending with ID are ints, blacklist such cases
+        ignore_ids = set(['EXTERNAL_ID', ])
+
+        for column_name in df.columns:
+            if (column_name == 'ID' or column_name.endswith('_ID')) and column_name not in ignore_ids:
+                df[column_name] = df[column_name].astype(int)
+
+        return df
+
     def load_table(self, location, name):
         return self.load_table_file(os.path.join(location, name + '.txt'),
                           self.schema[name])
@@ -144,8 +168,10 @@ class Merger(object):
         # of just enumerating new ids, so that we have continuity
         # of organism ids between releases of a dataset
         org_id = max(organisms['ID'])  # assumes only single org as above
+        org_id = int(org_id)
         if org_id in dict(self.merged['ORGANISMS']['ID']):
             org_id = max(self.merged['ORGANISMS']['ID']) + 1
+            org_id = int(org_id)
             organisms['ID'] = org_id
 
         self.append_table('ORGANISMS', organisms)
@@ -155,6 +181,7 @@ class Merger(object):
         network_groups = self.gio.load_table(location, 'NETWORK_GROUPS')
 
         max_id = max(self.merged['NETWORK_GROUPS']['ID'], default=0)
+        max_id = int(max_id)
         network_groups['ID'] += max_id
         network_groups['ORGANISM_ID'] = org_id
 
@@ -172,6 +199,7 @@ class Merger(object):
 
         # map ids by incrementing into empty id space
         n = max(self.merged['NETWORKS']['ID'], default=0)
+        n = max(n)
 
         networks['ID'] += n
         networks['METADATA_ID'] += n
@@ -212,6 +240,7 @@ class Merger(object):
         ontology_categories = self.gio.load_table(location, 'ONTOLOGY_CATEGORIES')
 
         n = max(self.merged['ONTOLOGY_CATEGORIES']['ID'], default=0)
+        n = max(n)
         ontology_categories['ID'] += n
 
         # set ontology id to org id, which we are requiring to be the
@@ -225,6 +254,7 @@ class Merger(object):
         attribute_groups = self.gio.load_table(location, 'ATTRIBUTE_GROUPS')
 
         n = max(self.merged['ATTRIBUTE_GROUPS']['ID'], default=0)
+        n = max(n)
         attribute_groups['ID'] += n
         self.append_table('ATTRIBUTE_GROUPS', attribute_groups)
 
@@ -235,6 +265,7 @@ class Merger(object):
         attributes = self.gio.load_table(location, 'ATTRIBUTES')
 
         n = max(self.merged['ATTRIBUTES']['ID'], default=0)
+        n = max(n)
         attributes['ID'] += n
         attributes['ATTRIBUTE_GROUP_ID'] += attribute_group_id_inc
         self.append_table('ATTRIBUTES', attributes)
@@ -255,6 +286,7 @@ class Merger(object):
 
         # update ids
         n = max(self.merged['NODES']['ID'], default=0)
+        n = max(n)
         nodes['ID'] += n
         nodes['GENE_DATA_ID'] += n
 
@@ -271,6 +303,7 @@ class Merger(object):
         gene_naming_sources = self.gio.load_table(location, 'GENE_NAMING_SOURCES')
 
         n = max(self.merged['GENE_NAMING_SOURCES']['ID'], default=0)
+        n = max(n)
         gene_naming_sources['ID'] += n
 
         self.append_table('GENE_NAMING_SOURCES', gene_naming_sources)
@@ -282,6 +315,7 @@ class Merger(object):
         genes = self.gio.load_table(location, 'GENES')
 
         n = max(self.merged['GENES']['ID'], default=0)
+        n = max(n)
 
         genes['ID'] += n
         genes['NODE_ID'] += node_id_inc
