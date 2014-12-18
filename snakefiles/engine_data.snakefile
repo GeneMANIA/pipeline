@@ -111,7 +111,7 @@ rule DEFAULT_COEXPRESSION:
 
 
 rule PRECOMBINE_NETWORKS:
-    message: "NetworkPrecombiner: build precoputed combined networks for common queries like single-gene"
+    message: "NetworkPrecombiner: build precomputed combined networks for common queries like single-gene"
     input: WORK+"/flags/engine.default_coexpression.flag"
     output: WORK+"/flags/engine.precombine_networks.flag"
     shell: """java -cp {JAR_FILE} -Xmx2G org.genemania.engine.apps.NetworkPrecombiner \

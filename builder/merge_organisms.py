@@ -385,7 +385,6 @@ class Merger(object):
 
     def copy_attribute_data(self, location, merged_location, attribute_group_id_inc, attribute_id_inc, node_id_inc):
 
-        from_dir = os.path.join(location, 'ATTRIBUTES')
         data_files = glob.glob(os.path.join(location, 'ATTRIBUTES', '*'))
 
         to_dir = os.path.join(merged_location, 'ATTRIBUTES')
