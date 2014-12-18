@@ -37,20 +37,20 @@ def main(inputfile, identsfile, outputfile, col, symbolcol, idcol, logfile):
     idents['_upper'] = idents['_symbol'].str.upper()
     indata['_upper'] = indata[col].str.upper()
 
-    print('idents', idents.head())
-    print('indata', indata.head())
+    #print('idents', idents.head())
+    #print('indata', indata.head())
 
     # join
     merged = pd.merge(indata, idents, on='_upper', how='inner')
     merged.drop(['_upper', '_symbol'], axis=1, inplace=True)
 
     cols = list(merged.columns)
-    print(cols)
+    #print(cols)
     cols.remove(symbolcol)
-    print("removed", cols)
+    #print("removed", cols)
 
     # drop duplicates ignoring the symbol column
-    print("merged is", merged.head())
+    #print("merged is", merged.head())
     merged.drop_duplicates(subset=cols, inplace=True)
     merged.drop('_id', axis=1, inplace=True)
 
