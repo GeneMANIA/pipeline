@@ -114,7 +114,7 @@ rule PRECOMBINE_NETWORKS:
     message: "NetworkPrecombiner: build precomputed combined networks for common queries like single-gene"
     input: WORK+"/flags/engine.default_coexpression.flag"
     output: WORK+"/flags/engine.precombine_networks.flag"
-    shell: """java -cp {JAR_FILE} -Xmx2G org.genemania.engine.apps.NetworkPrecombiner \
+    shell: """java -cp {JAR_FILE} -Xmx4G org.genemania.engine.apps.NetworkPrecombiner \
         -indexDir "{LUCENE_INDEX_DIR}" -cachedir "{NETWORK_CACHE_DIR}" \
         -log "{LOG_DIR}/NetworkPrecombiner.log" \
         && touch {output}
