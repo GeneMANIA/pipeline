@@ -100,7 +100,8 @@ rule TRANSPOSE_ATTRIBS:
     message: "convert attrib-gene to gene-attrib pairs"
     input: WORK+"/attributes/attrib-gene-list/{collection}/{fn}.txt.melted-transposed"
     output: WORK+"/attributes/attrib-gene-list/{collection}/{fn}.txt.melted"
-    shell: "cut -d '\t' -f 2,1 {input} > {output}"
+    shell: """awk -F'\t' '{{ print $2 "\t" $1}}'  {input} > {output}"""
+
 
 rule MELT_ATTRIBUTES3:
     message: "convert gmt-format ragged input files into tall thin tables"
