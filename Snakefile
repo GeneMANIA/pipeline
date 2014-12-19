@@ -32,9 +32,9 @@ else:
     WORK = 'work'
     RESULT = 'result'
 
-print("DATA:", DATA)
-print("WORK:", WORK)
-print("RESULT:", RESULT)
+print("DATA folder:", DATA)
+print("WORK folder:", WORK)
+print("RESULT folder:", RESULT)
 
 ## pipeline rules
 # set a default rule
