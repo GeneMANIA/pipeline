@@ -22,6 +22,7 @@ The [Conda](http://conda.pydata.org/) Python package manager makes it easy to in
 
  1. [pandas](http://pandas.pydata.org/)
  1. [snakemake](https://bitbucket.org/johanneskoester/snakemake/wiki/Home)
+ 1. [biopython](http://biopython.org/)
  1. [configobj](https://github.com/DiffSK/configobj)
  
 
