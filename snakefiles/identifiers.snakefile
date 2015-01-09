@@ -46,9 +46,9 @@ rule CLEAN_SYMBOLS:
 
 rule IDENTIFIER_DESCRIPTIONS:
     message: "create table containing descriptions for only the clean gene symbols"
-    input: WORK+"/identifiers/symbols.txt"
+    input: symbols=WORK+"/identifiers/symbols.txt", descriptions=COMBINED_DESCRIPTION_FILES
     output: WORK+"/identifiers/descriptions.txt"
-    shell: "python builder/clean_identifier_descriptions.py {input} --output {output}"
+    shell: "python builder/clean_identifier_descriptions.py {input.symbols} {input.descriptions} --output {output}"
 
 rule GENERIC_DB_NODES:
     message: "create generic db file NODES.txt"

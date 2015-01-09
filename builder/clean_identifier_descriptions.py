@@ -2,18 +2,36 @@
 
 import argparse
 import extract_identifiers
+import pandas as pd
 
-# TODO: actually extract all matching descriptions from filename,
-# possibly using symbol names instead of ids, fill in any missing
-# ones with empty strings. think about columns naming, maybe not needed here
+
 def main(identifiers_filename, descriptions_filename_list,
          output_filename, report_filename):
 
+    # loading the cleaned identifiers gives the list for which we need descriptions
     idents = extract_identifiers.load_identifiers(identifiers_filename)
     idents.reset_index(inplace=True)
     idents.drop_duplicates(subset=['GMID'], inplace=True)
-    idents.rename(columns={'SYMBOL': 'Definition'}, inplace=True)
-    idents.to_csv(output_filename, sep='\t', header=True, index=False,
+
+    # load in all the available descriptions
+    descs_list = []
+    for filename in descriptions_filename_list:
+        df = pd.read_csv(filename, sep='\t', names=['GMID', 'Definition'],
+                         na_filter=False, header=None)
+        descs_list.append(df)
+
+    descs = pd.concat(descs_list, ignore_index=True)
+    descs.drop_duplicates(subset=['GMID'], inplace=True)
+
+    # left join onto the identifiers, so any
+    # descriptions we don't need get dropped, and we
+    # get empty entries where we have no description
+    # for the symbol
+    wanted_descs = pd.merge(idents, descs, on='GMID', how='left')
+    wanted_descs.fillna('', inplace=True)
+
+    # write output
+    wanted_descs.to_csv(output_filename, sep='\t', header=True, index=False,
                   columns=['GMID', 'Definition'])
 
 
