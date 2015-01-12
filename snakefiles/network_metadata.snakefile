@@ -101,10 +101,10 @@ rule EXTRACT_NETWORKS:
 
 rule EXTRACT_NETWORK_GROUPS:
     message: "create generic db file NETWORK_GROUPS.txt"
-    input: metadata=WORK+"/networks/network_metadata.txt.processed", cfg=DATA+"/organism.cfg"
+    input: metadata=WORK+"/networks/network_metadata.txt.processed", cfg=DATA+"/organism.cfg", group_names="config/NETWORK_GROUP_NAMES.txt"
     output: RESULT+"/generic_db/NETWORK_GROUPS.txt"
     shell: """ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1)
-        python builder/extract_networks.py network_groups $ORGANISM_ID {input.metadata} {output}
+        python builder/extract_networks.py network_groups $ORGANISM_ID {input.metadata} {output} --group_names {input.group_names}
         """
 
 

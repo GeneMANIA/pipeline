@@ -21,9 +21,9 @@ import pandas as pd
 import numpy as np
 
 
-def extract_network_groups(input_file, output_file, organism_id):
+def extract_network_groups(input_file, output_file, organism_id, group_names_file=None):
 
-    output_cols =  ['ID', 'NAME', 'CODE', 'DESCRIPTION', 'ORGANISM_ID']
+    output_cols = ['ID', 'NAME', 'CODE', 'DESCRIPTION', 'ORGANISM_ID']
 
     metadata = pd.read_csv(input_file, sep='\t', header=0)
 
@@ -33,11 +33,18 @@ def extract_network_groups(input_file, output_file, organism_id):
     network_groups.sort(inplace=True)
 
     network_groups.columns = ['CODE']
-    network_groups['ORGANISM_ID'] = organism_id
 
-    # TODO: allow user-friendly network names configured
-    # in an additional data file
-    network_groups['NAME'] = network_groups['CODE']
+    # apply any user-friendly network group names, otherwise
+    # use group codes for display
+    if group_names_file is not None:
+        group_names = pd.read_csv(group_names_file, sep='\t', header=0)
+    else:
+        group_names = pd.DataFrame(names=['CODE', 'NAME'])
+
+    network_groups = pd.merge(network_groups, group_names, on='CODE', how='left')
+    network_groups['NAME'].fillna(network_groups['CODE'], inplace=True)
+
+    network_groups['ORGANISM_ID'] = organism_id
     network_groups['DESCRIPTION'] = ''
 
     # want ids starting at 1
@@ -153,6 +160,7 @@ if __name__ == '__main__':
     parser_network_groups.add_argument('organism_id', help='organism id')
     parser_network_groups.add_argument('input', help='1 or more input files')
     parser_network_groups.add_argument('output', help='output networks groups file')
+    parser_network_groups.add_argument('--group_names', help='optional text file mapping group codes to nicer names for ui')
 
     # networks metadata
     parser_network_metadata = subparsers.add_parser('network_metadata')
@@ -169,7 +177,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.subparser_name == 'network_groups':
-        extract_network_groups(args.input, args.output, args.organism_id)
+        extract_network_groups(args.input, args.output, args.organism_id, args.group_names)
     elif args.subparser_name == 'network_metadata':
         extract_network_metadata(args.input, args.output)
     elif args.subparser_name == 'networks':

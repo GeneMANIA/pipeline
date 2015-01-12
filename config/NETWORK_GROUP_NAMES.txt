@@ -1,0 +1,9 @@
+CODE	NAME
+coexp	Co-expression
+pi	Physical Interactions
+gi	Genetic Interactions
+coloc	Co-localization
+spd	Shared protein domains
+predict	Predicted
+path	Pathway
+other	Other
