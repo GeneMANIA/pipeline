@@ -1,3 +1,8 @@
+"""
+given a file containing gene symbols and attribute identifiers,
+produce an corresponding output file containing genemania internal
+gene ids and attribute ids
+"""
 
 import argparse
 import pandas as pd
