@@ -18,8 +18,13 @@ def main(attribute_file, description_file, output_file):
     descs = pd.read_csv(description_file, sep='\t', header=None, na_filter=False,
                         names=['ATTRIBUTE', 'DESCRIPTION'])
 
-    # remove duplicates in the descriptions (the attribs are already cleaned)
+    # remove duplicates in the descriptions
     descs.drop_duplicates(subset=['ATTRIBUTE'], inplace=True)
+
+    # dedup attributes, since they can appear in multiple rows
+    # by being associated with different genes
+    attribs = attribs[['ATTRIBUTE']]
+    attribs.drop_duplicates(inplace=True)
 
     # left merge, to grab only the needed descriptions
     output = pd.merge(attribs[['ATTRIBUTE']], descs[['ATTRIBUTE', 'DESCRIPTION']],
