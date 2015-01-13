@@ -84,10 +84,15 @@ rule GENERATE_NETWORK_NAMES:
     output: WORK+"/networks/network_metadata.txt.named"
     shell: "python builder/generate_network_names.py {input} {output}"
 
+rule JOIN_NICE_NETWORK_GROUP_NAMES:
+    message: "add group names like Co-expression for codes like coexp"
+    input: metadata=WORK+"/networks/network_metadata.txt.named", group_names="config/NETWORK_GROUP_NAMES.txt"
+    output: WORK+"/networks/network_metadata.txt.nicegroups"
+    shell: "python builder/nicen_network_group_names.py {input.metadata} {input.group_names} {output}"
 
 rule JOIN_NETWORK_INTERACTION_COUNTS:
     message: "incorporate network interaction counts to network metadata"
-    input: network_metadata=WORK+"/networks/network_metadata.txt.named", stats=WORK+"/networks/stats.txt"
+    input: network_metadata=WORK+"/networks/network_metadata.txt.nicegroups", stats=WORK+"/networks/stats.txt"
     output: WORK+"/networks/network_metadata.txt.processed"
     shell: "python builder/table_joiner.py {input.network_metadata} {input.stats} {output} 'dataset_key'"
 
@@ -101,10 +106,10 @@ rule EXTRACT_NETWORKS:
 
 rule EXTRACT_NETWORK_GROUPS:
     message: "create generic db file NETWORK_GROUPS.txt"
-    input: metadata=WORK+"/networks/network_metadata.txt.processed", cfg=DATA+"/organism.cfg", group_names="config/NETWORK_GROUP_NAMES.txt"
+    input: metadata=WORK+"/networks/network_metadata.txt.processed", cfg=DATA+"/organism.cfg"
     output: RESULT+"/generic_db/NETWORK_GROUPS.txt"
     shell: """ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1)
-        python builder/extract_networks.py network_groups $ORGANISM_ID {input.metadata} {output} --group_names {input.group_names}
+        python builder/extract_networks.py network_groups $ORGANISM_ID {input.metadata} {output}
         """
 
 

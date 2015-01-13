@@ -21,29 +21,18 @@ import pandas as pd
 import numpy as np
 
 
-def extract_network_groups(input_file, output_file, organism_id, group_names_file=None):
+def extract_network_groups(input_file, output_file, organism_id):
 
     output_cols = ['ID', 'NAME', 'CODE', 'DESCRIPTION', 'ORGANISM_ID']
 
     metadata = pd.read_csv(input_file, sep='\t', header=0)
 
     # extract & tidy up the network groups column
-    network_groups = metadata[['group']].copy()
+    network_groups = metadata[['group', 'group_name']].copy()
     network_groups.drop_duplicates(inplace=True)
     network_groups.sort(inplace=True)
 
-    network_groups.columns = ['CODE']
-
-    # apply any user-friendly network group names, otherwise
-    # use group codes for display
-    if group_names_file is not None:
-        group_names = pd.read_csv(group_names_file, sep='\t', header=0)
-    else:
-        group_names = pd.DataFrame(names=['CODE', 'NAME'])
-
-    network_groups = pd.merge(network_groups, group_names, on='CODE', how='left')
-    network_groups['NAME'].fillna(network_groups['CODE'], inplace=True)
-
+    network_groups.columns = ['CODE', 'NAME']
     network_groups['ORGANISM_ID'] = organism_id
     network_groups['DESCRIPTION'] = ''
 
@@ -111,15 +100,15 @@ def extract_network_metadata(input_file, output_file):
     # set to empty
     metadata['other'] = ''
 
-    # this is set to the nice network group name in old metadata, e.g. 'Co-expression'
-    # but hopefully not used. set to empty
-    metadata['networkType'] = ''
+    # this must be set to the nice network group name in old metadata, e.g. 'Co-expression'
+    metadata['networkType'] = metadata['group_name']
 
-    # empty values for misc other stuff, needs explanation TODO
-    metadata['source'] = 'None'
-    metadata['reference'] = ''
-    metadata['processingDescription'] = ''
-    metadata['sourceUrl'] = ''
+    # empty values for misc other stuff, needs explanation TODO update in wiki GenericDb.md
+    metadata['source'] = metadata['source']
+    metadata['reference'] = metadata['source_id']
+    #metadata['processingDescription'] = ''
+    metadata['processingDescription'] = 'Direct interaction' # 'Pearson correlation'
+    metadata['sourceUrl'] = 'http://thebiogrid.org'
 
     # write output
     metadata.to_csv(output_file, sep='\t', header=False, index=False,
@@ -160,7 +149,6 @@ if __name__ == '__main__':
     parser_network_groups.add_argument('organism_id', help='organism id')
     parser_network_groups.add_argument('input', help='1 or more input files')
     parser_network_groups.add_argument('output', help='output networks groups file')
-    parser_network_groups.add_argument('--group_names', help='optional text file mapping group codes to nicer names for ui')
 
     # networks metadata
     parser_network_metadata = subparsers.add_parser('network_metadata')
@@ -177,7 +165,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.subparser_name == 'network_groups':
-        extract_network_groups(args.input, args.output, args.organism_id, args.group_names)
+        extract_network_groups(args.input, args.output, args.organism_id)
     elif args.subparser_name == 'network_metadata':
         extract_network_metadata(args.input, args.output)
     elif args.subparser_name == 'networks':
