@@ -1,0 +1,4 @@
+LOCATION	PROCESSING_TYPE
+networks/direct	Direct interaction
+networks/profile	Pearson correlation
+networks/sharedneighbour	sharedneighbour

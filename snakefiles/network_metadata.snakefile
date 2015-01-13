@@ -90,12 +90,17 @@ rule JOIN_NICE_NETWORK_GROUP_NAMES:
     output: WORK+"/networks/network_metadata.txt.nicegroups"
     shell: "python builder/nicen_network_group_names.py {input.metadata} {input.group_names} {output}"
 
+rule GENERATE_NETWORK_PROCESSING_TYPES:
+    message: "add processing type description strings"
+    input: metadata=WORK+"/networks/network_metadata.txt.nicegroups", proc_types="config/NETWORK_PROCESSING_TYPES.txt"
+    output: WORK+"/networks/network_metadata.txt.proctypes"
+    shell: "python builder/generate_network_processing_types.py {input.metadata} {input.proc_types} {output}"
+
 rule JOIN_NETWORK_INTERACTION_COUNTS:
     message: "incorporate network interaction counts to network metadata"
-    input: network_metadata=WORK+"/networks/network_metadata.txt.nicegroups", stats=WORK+"/networks/stats.txt"
+    input: network_metadata=WORK+"/networks/network_metadata.txt.proctypes", stats=WORK+"/networks/stats.txt"
     output: WORK+"/networks/network_metadata.txt.processed"
     shell: "python builder/table_joiner.py {input.network_metadata} {input.stats} {output} 'dataset_key'"
-
 
 rule EXTRACT_NETWORKS:
     message: "create generic db file NETWORKS.txt, listing all networks"

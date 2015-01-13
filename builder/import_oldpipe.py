@@ -188,8 +188,6 @@ class Importer(object):
             print('skipping collection', collection)
             return
 
-        new_cfg['processing_type'] = proctype
-
         # check the corresponding data file exists
         data_file = old_cfg['gse'][data_filename_field]
         data_file = os.path.join(os.path.dirname(cfg_file), data_folder, data_file)
