@@ -8,10 +8,11 @@ from configobj import ConfigObj
 
 
 class Importer(object):
-    def __init__(self, old_dir, short_id, new_dir):
+    def __init__(self, old_dir, short_id, new_dir, force_default_selected):
         self.old_dir = old_dir
         self.short_id = short_id
         self.new_dir = new_dir
+        self.force_default_selected = force_default_selected
 
     def import_all(self):
         self.import_config()
@@ -88,7 +89,13 @@ class Importer(object):
         new_cfg = ConfigObj(encoding='UTF8')
 
         new_cfg['group'] = old_cfg['dataset']['group']
-        new_cfg['default_selected'] = old_cfg['dataset']['default_selected']
+
+        # overwrite default selected flag if requested
+        if self.force_default_selected:
+            new_cfg['default_selected'] = 1
+        else:
+            new_cfg['default_selected'] = old_cfg['dataset']['default_selected']
+
         new_cfg['name'] = old_cfg['dataset']['name']
         new_cfg['description'] = old_cfg['dataset']['description']
         new_cfg['pubmed_id'] = old_cfg['gse']['pubmed_id']
@@ -344,9 +351,9 @@ class Importer(object):
         shutil.copyfile(data_file, new_data_name)
         shutil.copyfile(desc_file, new_desc_name)
 
-def main(old_dir, short_id, new_dir):
+def main(old_dir, short_id, new_dir, force_default_selected=False):
 
-    importer = Importer(old_dir, short_id, new_dir)
+    importer = Importer(old_dir, short_id, new_dir, force_default_selected)
     importer.import_all()
 
 
@@ -357,9 +364,11 @@ if __name__ == '__main__':
     parser.add_argument('old_dir', help='db/ folder containing old pipeline data')
     parser.add_argument('short_id', help='organism short id in old pipeline, e.g. Hs for human')
     parser.add_argument('new_dir', help='data/ dir of new pipeline to populate')
+    parser.add_argument('--force_default_selected', help='set all networks to default_selected=1',
+                        action='store_true', default=False)
 
     args = parser.parse_args()
-    main(args.old_dir, args.short_id, args.new_dir)
+    main(args.old_dir, args.short_id, args.new_dir, args.force_default_selected)
 
 
 
