@@ -104,6 +104,16 @@ class Importer(object):
 
         new_cfg['source_id'] = source_id
 
+        # source linkouts, from the old cfg. from its comments:
+        if source in self.master_cfg['DataSources']:
+            if 'ref_url' in self.master_cfg['DataSources'][source]:
+                source_url = self.master_cfg['DataSources'][source]['ref_url']
+            else:
+                source_url = self.master_cfg['DataSources'][source]['url']
+        else:
+            source_url = ''
+
+        new_cfg['source_url'] = source_url
 
         # extract the 'collection' (e.g. biogrid) from the old path, its between
         # data and the short_id
@@ -177,6 +187,8 @@ class Importer(object):
         else:
             print('skipping collection', collection)
             return
+
+        new_cfg['processing_type'] = proctype
 
         # check the corresponding data file exists
         data_file = old_cfg['gse'][data_filename_field]
