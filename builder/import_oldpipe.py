@@ -108,6 +108,8 @@ class Importer(object):
         if source in self.master_cfg['DataSources']:
             if 'ref_url' in self.master_cfg['DataSources'][source]:
                 source_url = self.master_cfg['DataSources'][source]['ref_url']
+                if source_id:
+                    source_url = source_url % source_id
             else:
                 source_url = self.master_cfg['DataSources'][source]['url']
         else:
