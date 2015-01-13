@@ -1,4 +1,24 @@
 
+"""apply misc changes to network metadata, based
+on an auxiliary tab-delimited datafile with the columns:
+
+  dataset_key
+  var_name
+  var_value
+
+metadata records matching the given key (path to .cfg file, less the .cfg extension itself)
+are modified to have var_name set to the given value. e.g:
+
+  networks/direct/biogrid/somenetwork group gi
+
+will edit the 'group' value setting it to 'gi'. Why bother and not change the
+value in the .cfg file directly? actually yes, that's what you should do. this
+mechanism exists only for recording changes to programatically generated data files
+that need to have edits repeated when replaced with refreshed downloads.
+
+if you can avoid using this, please do
+"""
+
 import argparse
 import numpy as np
 import pandas as pd
