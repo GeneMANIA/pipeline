@@ -139,13 +139,13 @@ def extract_networks(input_file, groups_file, output_file):
     metadata = metadata[metadata['num_interactions'] > 0]
 
     # just the columns we need, rename others to avoid collisions when merging
-    groups.drop(['CODE', 'DESCRIPTION', 'ORGANISM_ID'], axis=1, inplace=True)
-    groups.columns = ['GROUP_ID', 'GROUP_NAME']
+    groups.drop(['NAME', 'DESCRIPTION', 'ORGANISM_ID'], axis=1, inplace=True)
+    groups.columns = ['GROUP_ID', 'GROUP_CODE']
 
     networks = metadata[['id', 'selected_name', 'group', 'description', 'default_selected']].copy()
-    networks.columns = ['ID', 'NAME', 'GROUP_NAME', 'DESCRIPTION', 'DEFAULT_SELECTED']
+    networks.columns = ['ID', 'NAME', 'GROUP_CODE', 'DESCRIPTION', 'DEFAULT_SELECTED']
 
-    networks = pd.merge(networks, groups, on='GROUP_NAME', how='inner')
+    networks = pd.merge(networks, groups, on='GROUP_CODE', how='inner')
     networks['METADATA_ID'] = networks['ID']
     networks.to_csv(output_file, sep='\t', header=False, index=False,
                     columns=output_cols)
