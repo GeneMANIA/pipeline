@@ -103,12 +103,11 @@ def extract_network_metadata(input_file, output_file):
     # this must be set to the nice network group name in old metadata, e.g. 'Co-expression'
     metadata['networkType'] = metadata['group_name']
 
-    # empty values for misc other stuff, needs explanation TODO update in wiki GenericDb.md
+    # empty values for misc other stuff
     metadata['source'] = metadata['source']
     metadata['reference'] = metadata['source_id']
-    #metadata['processingDescription'] = ''
-    metadata['processingDescription'] = 'Direct interaction' # 'Pearson correlation'
-    metadata['sourceUrl'] = 'http://thebiogrid.org'
+    metadata['processingDescription'] = metadata['processing_type']
+    metadata['sourceUrl'] = metadata['source_url']
 
     # write output
     metadata.to_csv(output_file, sep='\t', header=False, index=False,
