@@ -10,15 +10,9 @@ an extra integer id column.
 import argparse
 import pandas as pd
 from configobj import ConfigObj
+from buildutils import str2bool
 
 DEFAULT = ''
-
-
-# bool doesn't work as naively expected in argparse, see
-# http://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
-def str2bool(v):
-    return v.lower() in ("yes", "true", "t", "1")
-
 
 def fix_newlines(row):
     '''

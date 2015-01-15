@@ -35,8 +35,9 @@ rule APPLY_SYMBOL_SCRUBBING:
     #input: expand(DATA+"/identifiers/symbols/{fn}", fn=SYMBOL_FILES.fn)
     input: COMBINED_SYMBOL_FILES
     output: WORK+"/identifiers/symbols.txt"
+    params: merge_names="true"
     log: WORK+"/identifiers/symbols.log"
-    shell: "python builder/clean_identifiers.py {input} --output {output} --log {log}"
+    shell: "python builder/clean_identifiers.py {input} --output {output} --log {log} --merge_names {params.merge_names}"
 
 rule CLEAN_SYMBOLS:
     shell: """
