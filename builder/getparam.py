@@ -13,10 +13,24 @@ via:
 import argparse
 from configobj import ConfigObj
 
-def getparam(filename, varname, default=None):
+def getparam(filename, varname, default=None, empty_as_default=False):
     try:
         cfg = ConfigObj(filename, encoding='UTF8')
         value = cfg[varname]
+
+        # join lists into comma delim string
+        if not isinstance(value, str):
+            value = u','.join(value)
+
+        # check if empties should be replaced
+        if empty_as_default:
+            if value == u'':
+
+                if default is not None:
+                    value = default
+                else:
+                    raise
+
         return value
     except KeyError as e:
         if default is not None:
@@ -30,8 +44,12 @@ if __name__ == '__main__':
     parser.add_argument('config_file')
     parser.add_argument('var_name')
     parser.add_argument('--default')
+    parser.add_argument('--empty_as_default', help='replace explicitly given empty values with default value',
+                        action='store_true', default=False)
 
     args = parser.parse_args()
 
-    value = getparam(args.config_file, args.var_name, args.default)
+    value = getparam(args.config_file, args.var_name, args.default, args.empty_as_default)
+
+    # print the output so it can be used in shell scripts
     print(value)

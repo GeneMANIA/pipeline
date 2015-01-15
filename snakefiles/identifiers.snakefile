@@ -21,9 +21,10 @@ COMBINED_DESCRIPTION_FILES = expand(DATA+'/identifiers/descriptions/{fn}', fn=DE
 # into 3 column format, with a bit of cleaning applied
 rule MELT_RAW_IDENTIFIERS:
     message: "convert raw identifiers into id/symbol/source triplets, and filter biotypes"
-    input: DATA+"/identifiers/mixed_table/{fn}"
+    input: ident_file=DATA+"/identifiers/mixed_table/{fn}", cfg=DATA+"/organism.cfg"
     output: symbols=WORK+"/identifiers/symbols/{fn}.triplets", descriptions=WORK+"/identifiers/descriptions/{fn}.desc"
-    shell: "python builder/melt_raw_identifiers.py {input} {output.symbols} {output.descriptions} --biotypes protein_coding True"
+    shell: "python builder/melt_raw_identifiers.py {input.ident_file} {output.symbols} {output.descriptions} \
+        --biotypes $(python builder/getparam.py {input.cfg} identifier_biotypes --default protein_coding,True --empty_as_default)"
 
 # target rule for symbol scrubbing
 rule SCRUB_SYMBOLS:
@@ -33,11 +34,12 @@ rule SCRUB_SYMBOLS:
 rule APPLY_SYMBOL_SCRUBBING:
     message: "load all identifier input files containing id/symbol/source triplets and produce a single clean file remove duplicates and clashes"
     #input: expand(DATA+"/identifiers/symbols/{fn}", fn=SYMBOL_FILES.fn)
-    input: COMBINED_SYMBOL_FILES
+    input: files=COMBINED_SYMBOL_FILES, cfg=DATA+"/organism.cfg"
     output: WORK+"/identifiers/symbols.txt"
-    params: merge_names="true"
     log: WORK+"/identifiers/symbols.log"
-    shell: "python builder/clean_identifiers.py {input} --output {output} --log {log} --merge_names {params.merge_names}"
+    shell: "python builder/clean_identifiers.py {input.files} --output {output} --log {log} \
+        --merge_names $(python builder/getparam.py {input.cfg} identifier_merging_enabled --default true) \
+        --ignore $(python builder/getparam.py {input.cfg} identifier_sources_to_ignore --default ignore_nothing --empty_as_default)"
 
 rule CLEAN_SYMBOLS:
     shell: """

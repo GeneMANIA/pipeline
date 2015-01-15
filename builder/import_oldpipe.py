@@ -35,10 +35,9 @@ class Importer(object):
         new_cfg['gm_organism_id'] = old_cfg[self.short_id]['gm_organism_id']
         new_cfg['ncbi_taxonomy_id'] = old_cfg[self.short_id]['ncbi_taxonomy_id']
         new_cfg['default_genes'] = old_cfg['Defaults']['Genes'][self.short_id]
-
-        # we used to depend on a unique 'short_id' like Hs for each organism,
-        # but hopefully not needed anymore. remove this when sure
-        #new_cfg['short_id'] = old_cfg[self.short_id]['short_id']
+        new_cfg['identifier_merging_enabled'] = old_cfg[self.short_id]['identifier_merging_enabled']
+        new_cfg['identifier_biotypes'] = old_cfg[self.short_id]['identifier_biotypes']
+        new_cfg['identifier_sources_to_ignore'] = old_cfg[self.short_id]['identifier_sources_to_ignore']
 
         # write 'em out to new folder with
         if not os.path.exists(self.new_dir):
