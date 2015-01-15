@@ -39,7 +39,7 @@ rule APPLY_SYMBOL_SCRUBBING:
     log: WORK+"/identifiers/symbols.log"
     shell: "python builder/clean_identifiers.py {input.files} --output {output} --log {log} \
         --merge_names $(python builder/getparam.py {input.cfg} identifier_merging_enabled --default true) \
-        --ignore $(python builder/getparam.py {input.cfg} identifier_sources_to_ignore --default ignore_nothing --empty_as_default)"
+        --ignore '$(python builder/getparam.py {input.cfg} identifier_sources_to_ignore --default ignore_nothing --empty_as_default)'"
 
 rule CLEAN_SYMBOLS:
     shell: """
