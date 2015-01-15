@@ -46,8 +46,13 @@ if __name__ == '__main__':
     parser.add_argument('inputfile')
     parser.add_argument('symbols_outputfile')
     parser.add_argument('descriptions_outputfile')
-    parser.add_argument('--biotypes', nargs='*',
-                        help='only load records having one of these biotypes')
+    parser.add_argument('--biotypes', help='only load records having one of these biotypes, comma delimited list no spaces')
 
     args = parser.parse_args()
-    main(args.inputfile, args.symbols_outputfile, args.descriptions_outputfile, args.biotypes)
+
+    if args.biotypes:
+        biotypes = args.biotypes.split(',')
+    else:
+        biotypes = None
+
+    main(args.inputfile, args.symbols_outputfile, args.descriptions_outputfile, biotypes)
