@@ -139,6 +139,7 @@ class Merger(object):
 
     def merge(self, input_location_list, merged_location):
         for location in input_location_list:
+            print("processing %s", location)
             self.merge_db(location, merged_location)
 
         self.write_db(merged_location)
