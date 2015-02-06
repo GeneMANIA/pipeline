@@ -96,7 +96,7 @@ def main(inputfile, outputfile):
     network_metadata['selected_name'] = network_metadata.apply(lambda row: name_selector(row), axis=1)
 
     # take care of name collisions
-    groups = network_metadata.groupby(['group', 'selected_name'])
+    groups = network_metadata.groupby(['group', 'selected_name'], group_keys=False)
     updated_network_metadata = groups.apply(deduper)
 
     # write out update
