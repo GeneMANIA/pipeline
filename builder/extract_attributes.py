@@ -43,12 +43,11 @@ def extract_attributes(input_files, groups_file, output_file, organism_id,
         group_id = matched[0]
 
         attributes = pd.read_csv(input_file, sep='\t', header=False,
-                            names=['NAME', 'DESCRIPTION'],
+                            names=['EXTERNAL_ID', 'NAME', 'DESCRIPTION'],
                             dtype='str', na_filter=False)
 
         attributes['ATTRIBUTE_GROUP_ID'] = group_id
         attributes['ORGANISM_ID'] = organism_id
-        attributes['EXTERNAL_ID'] = attributes['NAME']
 
         all_attributes.append(attributes)
 

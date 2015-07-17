@@ -16,7 +16,7 @@ def main(attribute_file, description_file, output_file):
                           names=['GENE', 'ATTRIBUTE'])
 
     descs = pd.read_csv(description_file, sep='\t', header=None, na_filter=False,
-                        names=['ATTRIBUTE', 'DESCRIPTION'])
+                        names=['ATTRIBUTE', 'NAME', 'DESCRIPTION'])
 
     # remove duplicates in the descriptions
     descs.drop_duplicates(subset=['ATTRIBUTE'], inplace=True)
@@ -27,7 +27,7 @@ def main(attribute_file, description_file, output_file):
     attribs.drop_duplicates(inplace=True)
 
     # left merge, to grab only the needed descriptions
-    output = pd.merge(attribs[['ATTRIBUTE']], descs[['ATTRIBUTE', 'DESCRIPTION']],
+    output = pd.merge(attribs[['ATTRIBUTE']], descs[['ATTRIBUTE', 'NAME', 'DESCRIPTION']],
                       left_on='ATTRIBUTE', right_on='ATTRIBUTE', how='left')
 
     # empty string for missing descriptions
