@@ -9,7 +9,7 @@ import pandas as pd
 
 def main(filename, desc, mapping, output):
 
-    desc = pd.read_csv(desc, sep='\t', header=False, na_filter=False, names = ['ATTRIBUTE_ID', 'ATTRIBUTE_SYMBOL', 'DESCRIPTION'])
+    desc = pd.read_csv(desc, sep='\t', header=False, na_filter=False, names = ['ATTRIBUTE_ID', 'ATTRIBUTE_SYMBOL', 'ATTRIBUTE_NAME', 'DESCRIPTION'])
     desc['ATTRIBUTE_SYMBOL'] = desc['ATTRIBUTE_SYMBOL'].str.upper()
 
     symbols = pd.read_csv(mapping, sep='\t', header=None, na_filter=False, names=['NODE_ID', 'GENE_SYMBOL', 'SOURCE'])
