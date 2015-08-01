@@ -1,3 +1,7 @@
+"""
+remove duplicate rows accounting for symbols that
+map to the same underlying gene
+"""
 
 import argparse
 import pandas as pd
@@ -14,6 +18,8 @@ def main(inputfile, identsfile, outputfile, col, symbolcol, idcol, logfile):
     col -= 1
 
     idents = pd.read_csv(identsfile, sep=SEP, header=None, na_filter=False)
+    assert len(idents.columns) == 3
+    idents.columns = ['GMID', 'SYMBOL', 'SOURCE']
 
     # create empty output file if no input data. the read_csv fails if no
     # columns given so we can't test if the resulting dataframe is empty
@@ -32,27 +38,21 @@ def main(inputfile, identsfile, outputfile, col, symbolcol, idcol, logfile):
     # upper case the columns we are filtering by, since we
     # want case insensitive compare
     idents = idents[[idcol, symbolcol]]
-    idents.columns = ['_id', '_symbol']
+    idents.columns = ['GMID', 'SYMBOL']
 
-    idents['_upper'] = idents['_symbol'].str.upper()
-    indata['_upper'] = indata[col].str.upper()
-
-    #print('idents', idents.head())
-    #print('indata', indata.head())
+    idents['SYMBOL_UPPER'] = idents['SYMBOL'].str.upper()
+    indata['SYMBOL_UPPER'] = indata[col].str.upper()
 
     # join
-    merged = pd.merge(indata, idents, on='_upper', how='inner')
-    merged.drop(['_upper', '_symbol'], axis=1, inplace=True)
+    merged = pd.merge(indata, idents, on='SYMBOL_UPPER', how='inner')
+    merged.drop(['SYMBOL_UPPER', 'SYMBOL'], axis=1, inplace=True)
 
     cols = list(merged.columns)
-    #print(cols)
-    cols.remove(symbolcol)
-    #print("removed", cols)
+    cols.remove(col)
 
     # drop duplicates ignoring the symbol column
-    #print("merged is", merged.head())
     merged.drop_duplicates(subset=cols, inplace=True)
-    merged.drop('_id', axis=1, inplace=True)
+    merged.drop('GMID', axis=1, inplace=True)
 
     # write output, same columns & order as input data
     merged.to_csv(outputfile, sep=SEP, header=False, index=False, columns=indata_cols)
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     parser.add_argument('--symbolcol', type=int, default=2,
                         help='column containing symbol in identifiers file, default 2')
 
-    parser.add_argument('--idcol', type=int, default=2,
+    parser.add_argument('--idcol', type=int, default=1,
                         help='column containing id in indentifiers file, default 1')
 
     parser.add_argument('--log', type=str,
