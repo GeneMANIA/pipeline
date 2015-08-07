@@ -135,9 +135,9 @@ rule DEDUP_ATTRIBUTES:
 rule MAP_ATTRIBUTES_TO_IDS:
     message: "convert gene and attribute symbols to internal genemania ids"
     input: data=WORK+"/attributes/{proctype}/{collection}/{fn}.txt.clean", mapping=WORK+"/identifiers/symbols.txt",
-        desc=WORK+"/attributes/{proctype}/{collection}/{fn}.desc.cleaned"
+        lin_attr_id=WORK+"/attributes/linearized_attributes.txt"
     output: WORK+"/attributes/{proctype}/{collection}/{fn}.txt.mapped"
-    shell: "python builder/map_attributes_to_ids.py {input.data} {input.desc} {input.mapping} {output}"
+    shell: "python builder/map_attributes_to_ids.py {input.data} {input.lin_attr_id} {input.mapping} {output}"
 
 # need a better name for the target rule for the network metadata
 rule TABULATED_ATTRIBUTE_METADATA:
@@ -173,6 +173,17 @@ rule UPDATE_ATTRIBUTE_DESCRIPTIONS:
     output: WORK+"/attributes/{proctype}/{collection}/{fn}.desc.cleaned"
     shell: "python builder/update_attribute_descriptions.py {input.data} {input.desc} {output}"
 
+rule LINEARIZE_ATTRIBUTE_IDS:
+    message: """make sure attribute ids are unique for all attribute groups
+    belonging to t he organism
+    """
+    input: desc=ALL_DESCS, metadata=WORK+'/attributes/metadata.txt', cfg=DATA+"/organism.cfg"
+    output: WORK+"/attributes/linearized_attributes.txt"
+    shell: """ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1)
+    python builder/linearize_attribute_ids.py $ORGANISM_ID {output} {input.metadata} {input.desc} \
+        --key_lstrip='{WORK}/' --key_rstrip='.desc.cleaned'
+    """
+
 # generic db files for attributes
 rule GENERIC_DB_ATTRIBUTE_GROUPS:
     message: "create generic_db ATTRIBUTE_GROUPS.txt file"
@@ -185,12 +196,10 @@ rule GENERIC_DB_ATTRIBUTE_GROUPS:
 # generic db files for attributes
 rule GENERIC_DB_ATTRIBUTES:
     message: "create generic_db ATTRIBUTES.txt file with name of each attribute in each group"
-    input: desc=ALL_DESCS, metadata=WORK+'/attributes/metadata.txt', cfg=DATA+"/organism.cfg"
+    input: "work/attributes/linearized_attributes.txt"
     output: RESULT+"/generic_db/ATTRIBUTES.txt"
-    shell: """ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1)
-    python builder/extract_attributes.py attributes $ORGANISM_ID {output} {input.metadata} {input.desc} \
-        --key_lstrip='{WORK}/' --key_rstrip='.desc.cleaned'
-    """
+
+    shell: "python builder/extract_attributes.py attributes {input} {output}"
 
 # generic db attribute data files for engine cache
 #
