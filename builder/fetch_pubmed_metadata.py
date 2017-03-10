@@ -19,7 +19,8 @@ def fetch(pmid_list, email=None):
     result = Entrez.read(handle)
     handle.close()
 
-    return result
+    #return result
+    return result['PubmedArticle']
 
 
 def to_series(metadata):
@@ -120,7 +121,8 @@ def main(inputfile, outputfile, pubmed_datafile, fetchsize):
         pubmed_data = pd.concat([pubmed_data, new_pubmed_data])
         pubmed_data.drop_duplicates(inplace=True)
         pubmed_data.to_csv(pubmed_datafile, sep='\t', header=True, index=False,
-                           na_filter=False, encoding='UTF8')
+                           encoding='UTF8')
+                           #na_filter=False, encoding='UTF8')
 
     # join with network metadata
     # pushing index preserve id in from the left dataframe
@@ -130,7 +132,8 @@ def main(inputfile, outputfile, pubmed_datafile, fetchsize):
 
     updated_network_metadata.set_index('id', inplace=True)
     updated_network_metadata.to_csv(outputfile, sep='\t', header=True, index=True,
-                                    na_filter=False, encoding='UTF8')
+                                    encoding='UTF8')
+                                    #na_filter=False, encoding='UTF8')
 
 
 if __name__ == '__main__':
