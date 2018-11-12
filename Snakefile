@@ -6,10 +6,10 @@
 LOADER_VER, = glob_wildcards("lib/genemania-{version}-jar-with-dependencies.jar")
 
 if LOADER_VER:
-    JAR_FILE = "lib/genemania-%s-jar-with-dependencies.jar" % (LOADER_VER[0])
+    JAR_FILE = "/home/gmbuild/dev/r15/pipelines/lib/genemania-%s-jar-with-dependencies.jar" % (LOADER_VER[0])
 else:
     print("WARNING: genemania jar not found")
-    JAR_FILE = "lib/genemania.jar"
+    JAR_FILE = "/home/gmbuild/dev/r15/pipelines/lib/genemania.jar"
 
 # we could set a path in the snakefile by:
 #
