@@ -38,7 +38,7 @@ def clean(input_file, symbols_file, output_file_annos, output_file_anno_names):
     annos.to_csv(output_file_annos, sep='\t', header=['branch', 'category', 'node_id', 'gene'], index=False, columns=['branch', 'category', 'id', 'gene_orig'])
 
     # write annotation category names
-    names = annos[['category', 'name']].drop_duplicates().sort(['category'])
+    names = annos[['category', 'name']].drop_duplicates().sort_values(by=['category'])
     names.to_csv(output_file_anno_names, sep='\t', header=True, index=False)
 
 
@@ -64,7 +64,7 @@ def filter(input_file, output_file, min_size, max_size, branch_filter=None):
 
     out = pd.merge(annos, wanted, left_on = 'category', right_on = 'category', how='inner')
     out = out.ix[:, ('category', 'gene')]
-    out.sort(columns=['category', 'gene'], inplace=True)
+    out.sort_values(by=['category', 'gene'], inplace=True)
 
     out.to_csv(output_file, sep='\t', header=True, index=False, columns=['category', 'gene'])
 
