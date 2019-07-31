@@ -37,7 +37,7 @@ def main(inputfile, outputfile, logfile):
 
     else: 
         # drop non-numeric values in 3rd column
-        data[2] = data[2].to_numeric()
+        data[2] = pd.to_numeric(data[2])
         data.dropna(inplace=True)
 
     # write output
