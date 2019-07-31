@@ -38,7 +38,7 @@ def main(input_file, output_file):
     num_interactions = len(network)
 
     # count genes
-    all_genes = pd.concat([network[['gene1']], network[['gene2']]])
+    all_genes = pd.concat([network[['gene1']], network[['gene2']]],sort=True)
     all_genes.drop_duplicates(inplace=True)
     num_genes = len(all_genes)
 
