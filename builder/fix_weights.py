@@ -33,7 +33,7 @@ def main(inputfile, outputfile, logfile):
 
     if len(data.columns) > 3:
         print("Warning: input file %s contains too many columns (%s), using first 3" % (inputfile, len(data.columns)))
-        data = data.ix[:, :3]
+        data = data.iloc[:, :3]
 
     else: 
         # drop non-numeric values in 3rd column
