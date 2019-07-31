@@ -63,7 +63,7 @@ def filter(input_file, output_file, min_size, max_size, branch_filter=None):
     wanted = wanted.reset_index() # push category into a column
 
     out = pd.merge(annos, wanted, left_on = 'category', right_on = 'category', how='inner')
-    out = out.ix[:, ('category', 'gene')]
+    out = out.loc[:, ('category', 'gene')]
     out.sort_values(by=['category', 'gene'], inplace=True)
 
     out.to_csv(output_file, sep='\t', header=True, index=False, columns=['category', 'gene'])
