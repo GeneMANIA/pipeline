@@ -23,7 +23,7 @@ def main(network_metadata_file, attribute_metadata_file, symbols_file, output_fi
     num_interactions = network_metadata['num_interactions'].sum()
 
     symbols = pd.read_csv(symbols_file, sep='\t', na_filter=False, encoding='UTF8',
-                          dtype=str, header=False, names=['id', 'symbol', 'source'])
+                          dtype=str, names=['id', 'symbol', 'source'])
     num_genes = symbols['id'].nunique()
 
     # TODO: attributes
