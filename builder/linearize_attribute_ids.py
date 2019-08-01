@@ -37,7 +37,9 @@ def linearize_attributes(input_files, groups_file, output_file, organism_id,
 
         attributes = pd.read_csv(input_file, sep='\t', header=True,
                             dtype='str', na_filter=False)
-
+        
+        attributes.rename(index={0 "ID", 1: "EXTERNAL_ID", 2: "NAME", 3: "DESCRIPTION"})
+        
         attributes['ATTRIBUTE_GROUP_ID'] = group_id
         attributes['ORGANISM_ID'] = organism_id
 
