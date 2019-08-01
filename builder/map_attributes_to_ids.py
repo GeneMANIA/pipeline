@@ -28,7 +28,7 @@ def main(filename, lin_attr_id, mapping, output):
     # dedup
     clean = clean[['NODE_ID', 'LINEARIZED_ID']]
     clean.drop_duplicates(inplace=True)
-    clean.sort(inplace=True)
+    clean.sort_index(inplace=True)
 
     # write output
     clean.to_csv(output, sep='\t', header=False, index=False)
