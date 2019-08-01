@@ -51,7 +51,7 @@ def deduper(group_frame):
         if len(group_frame) < 2:
             return group_frame
 
-        group_frame = group_frame.sort(['pubmed_id', 'dataset_key'], axis=0)
+        group_frame = group_frame.sort_values(by=['pubmed_id', 'dataset_key'], axis=0)
 
         if len(group_frame) > len(ENDINGS):
             raise Exception("too many colliding networks with name '%s' to rename (%s)" %
