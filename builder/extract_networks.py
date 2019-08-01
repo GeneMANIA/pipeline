@@ -30,7 +30,7 @@ def extract_network_groups(input_file, output_file, organism_id):
     # extract & tidy up the network groups column
     network_groups = metadata[['group', 'group_name']].copy()
     network_groups.drop_duplicates(inplace=True)
-    network_groups.sort(inplace=True)
+    network_groups.sort_index(inplace=True)
 
     network_groups.columns = ['CODE', 'NAME']
     network_groups['ORGANISM_ID'] = organism_id
