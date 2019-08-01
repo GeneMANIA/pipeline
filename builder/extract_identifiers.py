@@ -71,7 +71,7 @@ def extract_naming_sources(identifiers_file, naming_sources_file):
     naming_sources = list(identifiers['SOURCE'].unique()) + must_have_sources
     naming_sources = pd.Series(naming_sources).unique() # in case some must-have's were already there
     naming_sources = pd.DataFrame(naming_sources, columns=['NAME'])
-    naming_sources.sort(columns=['NAME'], inplace=True)
+    naming_sources.sort_values(by=['NAME'], inplace=True)
     naming_sources.reset_index(inplace=True, drop=True)
     naming_sources.index += 1 # start numbering at 1
 
