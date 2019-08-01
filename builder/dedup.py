@@ -37,7 +37,7 @@ def main(inputfile, identsfile, outputfile, col, symbolcol, idcol, logfile):
 
     # upper case the columns we are filtering by, since we
     # want case insensitive compare
-    idents = idents[[idcol, symbolcol]]
+    idents = idents.iloc[:,[idcol, symbolcol]]
     idents.columns = ['GMID', 'SYMBOL']
 
     idents['SYMBOL_UPPER'] = idents['SYMBOL'].str.upper()
