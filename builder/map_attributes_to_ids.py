@@ -18,7 +18,7 @@ def main(filename, lin_attr_id, mapping, output):
 
     data = pd.read_csv(filename, sep='\t', header=None, na_filter=False, names=['GENE_SYMBOL', 'ATTRIBUTE_SYMBOL'])
     data['GENE_SYMBOL'] = data['GENE_SYMBOL'].str.upper()
-    data['ATTRIBUTE_SYMBOL'] = data['ATTRIBUTE_SYMBOL'].str.upper()
+    data['ATTRIBUTE_SYMBOL'] = data['ATTRIBUTE_SYMBOL'].astype(str).str.upper()
 
     # apply cleaning by joining on the tables of clean symbols
     # TODO: maybe can make this faster by putting the join column as the index?
