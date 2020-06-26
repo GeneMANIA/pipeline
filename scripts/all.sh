@@ -7,6 +7,9 @@ fi
 srcdb=${1}
 build_version=${2}
 
+#make sure the loader libraries are available to each build
+cp /home/gmbuild/dev/${build_version}/src/loader/target/*.jar ~/sm_build_org/lib/
+
 echo "Building all organisms"
 ./auto.sh worm Ce $srcdb > worm.log 2>&1
 
