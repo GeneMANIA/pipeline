@@ -28,7 +28,7 @@ fi
 
 git clone https://github.com/GeneMANIA/pipeline.git merged
 pushd merged
-cp /home/gmbuild/dev/${build_version}/src/loader/target/*.jar lib
+cp /home/gmbuild/dev/${build_version}/src/loader/target/*.jar ~/sm_build_org/lib/
 cp /home/gmbuild/dev/${build_version}/src/loader/target/*.jar ~/pipeline/lib
 snakemake -j4 --config merge=1 orgs=../arabidopsis,../worm,../fly,../human,../mouse,../yeast,../rat,../zebrafish,../ecoli
 cp -r result/* /gm/db_build/${build_version}/
