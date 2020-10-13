@@ -10,7 +10,7 @@ MAX_IDS_PER_REQUEST = 200
 PUBMED_FIELDS = ['pubmed_id', 'title', 'journal', 'journal_short',
                  'year', 'first_author', 'last_author']
 
-def fetch(pmid_list, email=None):
+def fetch(pmid_list, email='genemania.build.process@gmail.com'):
 
     Entrez.email = email
     pmid_list = [pmid for pmid in pmid_list if pmid is not None]
