@@ -48,7 +48,7 @@ echo "[+] python builder/import_oldpipe.py $srcdb $sname data/ --force_default_s
 python builder/import_oldpipe.py $srcdb $sname data/ --force_default_selected
 if [[ $? -ne 0 ]]; then 
     echo "[!] import_oldpipe.py failed"
-    ./message_slacks.sh "[!] import_oldpipe.py failed"
+    ../message_slacks.sh "[!] import_oldpipe.py failed"
     exit 1
 fi 
 
@@ -61,10 +61,10 @@ echo "[+] running snakemake"
 time snakemake -j4 -p
 if [[ $? -ne 0 ]]; then 
     echo "[!] snakemake failed"
-    ./message_slack.sh "[!] snakemake failed for $lname"
+    ../message_slack.sh "[!] snakemake failed for $lname"
     exit 1
 fi 
 
-./message_slack.sh "[+] snakemake for $lname completed successfully"
+../message_slack.sh "[+] snakemake for $lname completed successfully"
 
 cd ..
