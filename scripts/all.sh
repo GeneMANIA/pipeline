@@ -11,6 +11,7 @@ build_version=${2}
 mkdir ~/sm_build_org/lib
 cp /home/gmbuild/dev/${build_version}/src/loader/target/*.jar ~/sm_build_org/lib/
 
+./message_slack.sh "Building all organisms"
 echo "Building all organisms"
 ./auto.sh worm Ce $srcdb > worm.log 2>&1
 
@@ -24,6 +25,7 @@ echo "Building all organisms"
 ./auto.sh ecoli Ec $srcdb > ecoli.log 2>&1
 
 echo "Merging all data"
+./message_slack.sh "Merging all data"
 
 if [[ -d merged ]]; then
     tmpname=$(basename $(mktemp -u))
