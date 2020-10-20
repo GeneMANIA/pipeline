@@ -41,4 +41,4 @@ snakemake -j4 --config merge=1 orgs=../arabidopsis,../worm,../fly,../human,../mo
 cp -r result/* /gm/db_build/${build_version}/
 popd
 
-
+./message_slack.sh "Merge data completed"

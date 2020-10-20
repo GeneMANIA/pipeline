@@ -39,9 +39,16 @@ fi
 #ssh root@192.168.81.219 ./sync_date.sh
 
 cd $lname
+
+../message_slack.sh "[+] workdir: `pwd`"
+../message_slack.sh "[+] copying jar files to lib"
+
 echo "[+] workdir: `pwd`"
 echo "[+] copying jar files to lib"
 cp ../lib/*.jar lib
+
+../message_slack.sh "[+] running import_oldpipe.py on $sname"
+../message_slack.sh "[+] python builder/import_oldpipe.py $srcdb $sname data/ --force_default_selected"
 
 echo "[+] running import_oldpipe.py on $sname"
 echo "[+] python builder/import_oldpipe.py $srcdb $sname data/ --force_default_selected"
@@ -53,10 +60,12 @@ if [[ $? -ne 0 ]]; then
 fi 
 
 # fix pfam.cfg and all.cfg names
+../message_slack.sh "[+] fixing names for PFAM and INTERPRO"
 echo "[+] fixing names for PFAM and INTERPRO"
 sed -i 's/name = \"\"/name = \"PFAM\"/g' data/networks/sharedneighbour/pfam/pfam.cfg
 sed -i 's/name = \"\"/name = \"INTERPRO\"/g' data/networks/sharedneighbour/interpro/all.cfg
 
+../message_slack.sh "[+] running snakemake"
 echo "[+] running snakemake"
 time snakemake -j4 -p
 if [[ $? -ne 0 ]]; then 
