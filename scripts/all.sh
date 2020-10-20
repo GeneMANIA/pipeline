@@ -10,6 +10,10 @@ build_version=${2}
 #make sure the loader libraries are available to each build
 mkdir ~/sm_build_org/lib
 cp /home/gmbuild/dev/${build_version}/src/loader/target/*.jar ~/sm_build_org/lib/
+#also copy to the main pipeline directory because some of the snakemake scripts
+#point to that directory
+cp /home/gmbuild/dev/${build_version}/src/loader/target/*.jar ~/pipeline/lib/
+
 
 ./message_slack.sh "Building all organisms"
 echo "Building all organisms"
