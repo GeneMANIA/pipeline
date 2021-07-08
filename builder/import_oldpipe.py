@@ -230,8 +230,9 @@ class Importer(object):
             os.makedirs(target_dir)
 
         new_file = os.path.join(target_dir, 'go_annos.txt')
-
-        shutil.copyfile(old_file, new_file)
+        
+        if os.path.exists(new_file):
+            shutil.copyfile(old_file, new_file)
 
     def import_attributes(self):
         """two places to find attributes, in the web-import folder
