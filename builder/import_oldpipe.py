@@ -230,8 +230,8 @@ class Importer(object):
             os.makedirs(target_dir)
 
         new_file = os.path.join(target_dir, 'go_annos.txt')
-        
-        if os.path.exists(new_file):
+
+        if os.path.exists(old_file):
             shutil.copyfile(old_file, new_file)
 
     def import_attributes(self):
