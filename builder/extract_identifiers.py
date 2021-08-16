@@ -60,7 +60,7 @@ def extract_nodes(identifiers, organism_id, output):
                  index_label='ID', columns=['NAME', 'GENE_DATA_ID', 'ORGANISM_ID'])
 
 
-def extract_naming_sources(identifiers_file, naming_sources_file):
+def extract_naming_sources(identifiers_file, naming_sources_file, organism_id):
 
     must_have_sources = ['Entrez Gene ID']
 
@@ -73,7 +73,8 @@ def extract_naming_sources(identifiers_file, naming_sources_file):
     naming_sources = pd.DataFrame(naming_sources, columns=['NAME'])
     naming_sources.sort_values(by=['NAME'], inplace=True)
     naming_sources.reset_index(inplace=True, drop=True)
-    naming_sources.index += 1 # start numbering at 1
+    #When merging multiple species the naming sources from different organisms get all messed up.  Make a unique numbering for each species based on the species number.
+    naming_sources.index += ((organism_id * 100) + 1) # start numbering at 1
 
     naming_sources.index.name = 'ID'
 
@@ -166,7 +167,7 @@ def process(args):
         extract_gene_data(args.identifiers, args.descriptions, args.outptu)
     elif args.type == 'naming_sources':
         #extract_naming_sources(identifiers_file, naming_sources_file)
-        extract_naming_sources(args.identifiers, args.output)
+        extract_naming_sources(args.identifiers, args.output, args.organism_id)
     elif args.type == 'genes':
         #extract_genes(identifiers_file, naming_sources_file, organism_id, genes_file)
         extract_genes(args.identifiers, args.output, args.organism_id, args.output)
@@ -201,6 +202,7 @@ if __name__ == '__main__':
     parser_naming_sources = subparsers.add_parser('naming_sources')
     parser_naming_sources.add_argument("identifiers", help="cleaned identifiers file")
     parser_naming_sources.add_argument("output", help="output file")
+    parser_naming_sources.add_argument("organism_id", type=int, help="organism identifier")
 
      # parse args and dispatch
     args = parser.parse_args()
@@ -212,6 +214,6 @@ if __name__ == '__main__':
     elif args.subparser_name == 'gene_data':
         extract_gene_data(args.identifiers, args.descriptions, args.output)
     elif args.subparser_name == 'naming_sources':
-        extract_naming_sources(args.identifiers, args.output)
+        extract_naming_sources(args.identifiers, args.output, args.organism_id)
     else:
         raise Exception('unexpected command')
