@@ -75,7 +75,9 @@ rule GENERIC_DB_GENE_DATA:
 
 rule GENERIC_DB_GENE_NAMING_SOURCES:
     message: "create generic db file GENE_NAMING_SOURCES.txt enumerating all identifier source types"
-    input: WORK+"/identifiers/symbols.txt"
+    input: symbols=WORK+"/identifiers/symbols.txt", cfg=DATA+"/organism.cfg"
     output: RESULT+"/generic_db/GENE_NAMING_SOURCES.txt"
-    shell: "python builder/extract_identifiers.py naming_sources {input} {output}"
+    shell: """ORGANISM_ID=$(python builder/getparam.py {input.cfg} gm_organism_id --default 1) 
+	python builder/extract_identifiers.py naming_sources {input.symbols} {output} $ORGANISM_ID
+	"""
 
