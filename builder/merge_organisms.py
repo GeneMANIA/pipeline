@@ -303,10 +303,23 @@ class Merger(object):
         '''
 
         gene_naming_sources = self.gio.load_table(location, 'GENE_NAMING_SOURCES')
+        
+        #get the max id value in the incoming file.
+        max_in_new_file = max(gene_naming_sources['ID'], default = 0)
+        max_in_new_file = int(max_in_new_file)
 
+        #get the max of the running merged file
         n = max(self.merged['GENE_NAMING_SOURCES']['ID'], default=0)
         n = int(n)
-        gene_naming_sources['ID'] += n
+        
+        #get the max value of the ids for ids less than 100
+        #max_less_than100 = max(i for i in self.merged['GENE_NAMING_SOURCES']['ID'] if i < 100)
+        max_less_than100 = max(filter(lambda i: i < 100, self.merged['GENE_NAMING_SOURCES']['ID']),default=0)
+        max_less_than100 = int(max_less_than100)
+
+        # to accomadate issues with merging and yeast added this hack.  Once all organism use the correct numbering won't need to increment any of th ids.
+        if max_in_new_file < 100:
+            gene_naming_sources['ID'] += max_less_than100
 
         self.append_table('GENE_NAMING_SOURCES', gene_naming_sources)
 
